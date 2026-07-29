@@ -1,0 +1,323 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  EDITOR
+  ADMIN
+}
+
+enum Level {
+  BASE
+  INTERMEDIO
+  AVANZATO
+}
+
+enum ContentStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LessonContentType {
+  TEXT
+  VIDEO
+  PDF
+}
+
+enum FileType {
+  PDF
+  WORD
+  EXCEL
+  POWERPOINT
+  IMAGE
+  VIDEO
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  OPEN_TEXT
+  FILL_BLANK
+  DRAG_DROP
+  ORDERING
+  IMAGE_CHOICE
+}
+
+enum GameType {
+  FLASHCARD
+  MEMORY
+  DRAG_DROP
+  PUZZLE
+  TIMED_QUIZ
+  ESCAPE_ROOM
+  FIND_ERROR
+  IMAGE_MATCH
+}
+
+enum EnrollmentStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  fullName      String
+  avatarUrl     String?
+  role          Role           @default(STUDENT)
+  createdAt     DateTime       @default(now())
+  coursesAuthored Course[]     @relation("CourseAuthor")
+  enrollments   Enrollment[]
+  quizAttempts  QuizAttempt[]
+  gameSessions  GameSession[]
+  certificates  Certificate[]
+  userLevel     UserLevel?
+  userBadges    UserBadge[]
+}
+
+model Category {
+  id       String     @id @default(uuid())
+  name     String
+  slug     String     @unique
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  courses  Course[]   @relation("CourseCategories")
+  documents Document[]
+  videos   Video[]
+  faqs     Faq[]
+  downloads DownloadFile[]
+}
+
+model Tag {
+  id      String   @id @default(uuid())
+  name    String   @unique
+  courses Course[] @relation("CourseTags")
+}
+
+model Course {
+  id               String        @id @default(uuid())
+  title            String
+  slug             String        @unique
+  description      String
+  coverUrl         String?
+  authorId         String
+  author           User          @relation("CourseAuthor", fields: [authorId], references: [id])
+  level            Level         @default(BASE)
+  estimatedMinutes Int           @default(0)
+  status           ContentStatus @default(DRAFT)
+  publishAt        DateTime?
+  createdAt        DateTime      @default(now())
+  categories       Category[]    @relation("CourseCategories")
+  tags             Tag[]         @relation("CourseTags")
+  modules          Module[]
+  enrollments      Enrollment[]
+  certificates     Certificate[]
+}
+
+model Module {
+  id         String   @id @default(uuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title      String
+  orderIndex Int
+  lessons    Lesson[]
+}
+
+model Lesson {
+  id               String            @id @default(uuid())
+  moduleId         String
+  module           Module            @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title            String
+  orderIndex       Int
+  estimatedMinutes Int               @default(10)
+  contentType      LessonContentType @default(TEXT)
+  contentBody      String?
+  videoUrl         String?
+  documentId       String?
+  quizzes          Quiz[]
+  lessonProgress   LessonProgress[]
+}
+
+model Enrollment {
+  id             String           @id @default(uuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id])
+  courseId       String
+  course         Course           @relation(fields: [courseId], references: [id])
+  status         EnrollmentStatus @default(IN_PROGRESS)
+  progressPct    Float            @default(0)
+  enrolledAt     DateTime         @default(now())
+  completedAt    DateTime?
+  lessonProgress LessonProgress[]
+
+  @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id               String     @id @default(uuid())
+  enrollmentId     String
+  enrollment       Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lessonId         String
+  lesson           Lesson     @relation(fields: [lessonId], references: [id])
+  completed        Boolean    @default(false)
+  timeSpentSeconds Int        @default(0)
+  lastViewedAt     DateTime   @default(now())
+
+  @@unique([enrollmentId, lessonId])
+}
+
+model Document {
+  id                String             @id @default(uuid())
+  title             String
+  description       String?
+  author            String?
+  categoryId        String?
+  category          Category?          @relation(fields: [categoryId], references: [id])
+  level             Level              @default(BASE)
+  estimatedMinutes  Int                @default(15)
+  versions          DocumentVersion[]
+}
+
+model DocumentVersion {
+  id            String   @id @default(uuid())
+  documentId    String
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  fileUrl       String
+  changelog     String?
+  isCurrent     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model Video {
+  id               String   @id @default(uuid())
+  title            String
+  description      String?
+  categoryId       String?
+  category         Category? @relation(fields: [categoryId], references: [id])
+  url              String
+  durationSeconds  Int
+  level            Level    @default(BASE)
+}
+
+model Quiz {
+  id               String   @id @default(uuid())
+  title            String
+  description      String?
+  lessonId         String?
+  lesson           Lesson?  @relation(fields: [lessonId], references: [id])
+  passThresholdPct Float    @default(60)
+  level            Level    @default(BASE)
+  questions        Question[]
+  attempts         QuizAttempt[]
+}
+
+model Question {
+  id           String       @id @default(uuid())
+  quizId       String
+  quiz         Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  type         QuestionType @default(MULTIPLE_CHOICE)
+  prompt       String
+  payload      Json
+  explanation  String?
+  scoreWeight  Int          @default(1)
+  difficulty   Level        @default(BASE)
+}
+
+model QuizAttempt {
+  id          String    @id @default(uuid())
+  quizId      String
+  quiz        Quiz      @relation(fields: [quizId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  scorePct    Float?
+  passed      Boolean?
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+}
+
+model MiniGame {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  type        GameType
+  difficulty  Level      @default(BASE)
+  config      Json
+  sessions    GameSession[]
+}
+
+model GameSession {
+  id              String   @id @default(uuid())
+  gameId          String
+  game            MiniGame @relation(fields: [gameId], references: [id])
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  score           Int      @default(0)
+  durationSeconds Int      @default(0)
+  playedAt        DateTime @default(now())
+}
+
+model DownloadFile {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  fileType    FileType
+  url         String
+  sizeBytes   Int       @default(0)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+}
+
+model Faq {
+  id         String    @id @default(uuid())
+  question   String
+  answer     String
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+}
+
+model Certificate {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id])
+  verifyCode String   @unique
+  pdfUrl     String?
+  issuedAt   DateTime @default(now())
+}
+
+model UserLevel {
+  userId     String @id
+  user       User   @relation(fields: [userId], references: [id])
+  currentLevel Int  @default(1)
+  totalXp    Int    @default(0)
+}
+
+model Badge {
+  id                 String      @id @default(uuid())
+  name               String
+  criteriaDescription String?
+  iconUrl            String?
+  userBadges         UserBadge[]
+}
+
+model UserBadge {
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  badgeId  String
+  badge    Badge    @relation(fields: [badgeId], references: [id])
+  earnedAt DateTime @default(now())
+
+  @@id([userId, badgeId])
+}
