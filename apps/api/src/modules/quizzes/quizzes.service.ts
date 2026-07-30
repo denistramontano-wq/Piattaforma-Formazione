@@ -68,8 +68,11 @@ export class QuizzesService {
     const scorePct = max > 0 ? (obtained / max) * 100 : 0;
     const passed = scorePct >= quiz.passThresholdPct;
 
-    await this.prisma.quizAttempt.create({
+    const attempt = await this.prisma.quizAttempt.create({
       data: { quizId: id, userId: user.id, scorePct, passed, submittedAt: new Date() },
+    });
+    await this.prisma.quizAttemptAnswer.createMany({
+      data: details.map((d) => ({ attemptId: attempt.id, questionId: d.questionId, correct: d.correct })),
     });
 
     if (passed) {

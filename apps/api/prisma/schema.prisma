@@ -241,6 +241,7 @@ model Question {
   explanation  String?
   scoreWeight  Int          @default(1)
   difficulty   Level        @default(BASE)
+  attemptAnswers QuizAttemptAnswer[]
 }
 
 model QuizAttempt {
@@ -253,6 +254,20 @@ model QuizAttempt {
   passed      Boolean?
   startedAt   DateTime  @default(now())
   submittedAt DateTime?
+  answers     QuizAttemptAnswer[]
+}
+
+/// Correttezza per singola domanda in un tentativo, per l'analytics "domande più sbagliate" (docs/07 §7.2)
+model QuizAttemptAnswer {
+  id        String      @id @default(uuid())
+  attemptId String
+  attempt   QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId String
+  question  Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  correct   Boolean
+  createdAt DateTime    @default(now())
+
+  @@index([questionId])
 }
 
 model MiniGame {

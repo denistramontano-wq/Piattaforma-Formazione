@@ -3,14 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { api } from '@/lib/api';
 import type { CurrentUser, MyGamification } from '@/lib/types';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
-
-const ACTION_LABELS: Record<string, string> = {
-  LESSON_COMPLETED: 'Lezione completata',
-  COURSE_COMPLETED: 'Corso completato',
-  QUIZ_PASSED: 'Quiz superato',
-  GAME_COMPLETED: 'Mini gioco completato',
-  DAILY_STREAK: 'Accesso giornaliero',
-};
+import { XP_ACTION_LABELS } from '@/lib/activity-labels';
 
 export default async function ProfilePage() {
   const [user, gamification] = await Promise.all([
@@ -112,7 +105,7 @@ export default async function ProfilePage() {
               <ul className="flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400">
                 {gamification.recentActivity.slice(0, 8).map((e, i) => (
                   <li key={i} className="flex items-center justify-between">
-                    <span>{ACTION_LABELS[e.action] ?? e.action}</span>
+                    <span>{XP_ACTION_LABELS[e.action] ?? e.action}</span>
                     <span className="font-medium text-emerald-600 dark:text-emerald-400">+{e.points} XP</span>
                   </li>
                 ))}

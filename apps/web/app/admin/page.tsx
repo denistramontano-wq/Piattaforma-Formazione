@@ -36,6 +36,9 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/gamification" className="btn-secondary">
             🎮 Regole gamification
           </Link>
+          <Link href="/admin/analytics" className="btn-secondary">
+            📊 Analytics
+          </Link>
         </div>
       </div>
 

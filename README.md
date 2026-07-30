@@ -9,8 +9,9 @@ Questo scaffold implementa progressivamente i capitoli del documento di progetta
 - **03 — Sistema di ricerca**: motore federato full-text (PostgreSQL) su corsi/manuali/video/quiz/giochi/FAQ, incluso il testo estratto dai PDF.
 - **05 — Gamification**: 8 tipologie di mini gioco (flashcard, memory, drag&drop, puzzle, quiz a tempo, escape room, trova l'errore, abbinamento immagini), motore XP con livelli, badge assegnati automaticamente, streak giornaliera e classifica (settimanale/mensile/sempre), con pannello admin per configurare punti XP e badge.
 - **06 — Intelligenza Artificiale**: generazione di riassunti/flashcard/quiz/mappe concettuali con revisione admin, e assistente virtuale RAG che risponde solo sui materiali caricati citando le fonti. Funziona anche **senza** chiave API (provider locale deterministico) — vedi sotto.
+- **07 — Dashboard utente e admin**: dashboard utente con grafici (andamento corsi a ciambella, punteggi quiz nel tempo, tempo di studio settimanale stimato) e timeline attività; dashboard admin con trend nuove iscrizioni, funnel iscritti/completamenti per corso, analisi "domande più sbagliate" reale (basata sulle risposte salvate ad ogni tentativo) ed elenco utenti inattivi, entrambe con esportazione CSV.
 
-I capitoli restanti (dashboard analitiche approfondite, ecc.) sono pianificati.
+I capitoli restanti (**04 — Sistema di quiz**, oltre le funzionalità base già presenti) sono pianificati.
 
 ## Struttura del repository
 
@@ -68,6 +69,14 @@ Per restare nello scope realizzabile in questa fase, il modulo gamification si d
 - **Classifica calcolata con aggregazioni SQL** (Prisma `groupBy`), non Redis Sorted Set: corretto e sufficientemente veloce per i volumi di questa fase; da rivedere se il numero di utenti crescerà molto (vedi `docs/16-scalabilita-manutenibilita.md`).
 - **Streak giornaliera approssimata**: non esiste ancora un sistema di login reale, quindi la streak si aggiorna alla prima chiamata autenticata della giornata (es. apertura del profilo), non a un vero evento di accesso.
 - **Regole badge codificate**, non un motore di regole data-driven: ogni badge seedato ha un `code` collegato a un controllo scritto nel codice (`badge-engine.service.ts`). L'admin può modificare nome/descrizione o creare un nuovo badge scegliendo tra le regole disponibili, ma non definire criteri arbitrari da interfaccia.
+
+## Modulo Dashboard — semplificazioni rispetto a docs/07
+
+- **Tempo di studio stimato, non tracciato**: non esiste un meccanismo di rilevazione del tempo reale sulla pagina (richiederebbe un endpoint di heartbeat lato client). Il grafico settimanale somma i minuti stimati (`estimatedMinutes`) delle lezioni completate in ciascuna settimana, non il tempo effettivo trascorso.
+- **"A rischio abbandono"** è un'euristica (iscrizione in corso senza attività da più di 14 giorni), non uno stato salvato esplicitamente.
+- **Analytics calcolate on-demand** (query dirette), non tabelle di riepilogo ricalcolate da job schedulati come descritto nel capitolo: a questi volumi di dati sufficientemente rapido, da rivedere in scala (vedi `docs/16-scalabilita-manutenibilita.md`).
+- **Export solo CSV**, generato lato client dai dati già caricati: niente Excel/PDF né builder di report con invio email programmato.
+- Le **"domande più sbagliate"** sono ora reali (tabella `QuizAttemptAnswer` popolata ad ogni tentativo), ma solo sui tentativi svolti da quando questa tabella esiste — i tentativi precedenti non hanno il dettaglio per domanda.
 
 ## Utente demo
 

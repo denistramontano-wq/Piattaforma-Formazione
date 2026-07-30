@@ -141,13 +141,22 @@ export interface CurrentUser {
   badgeCount: number;
 }
 
+export type ActivityEvent =
+  | { type: 'xp'; action: string; points: number; createdAt: string }
+  | { type: 'badge'; label: string; createdAt: string }
+  | { type: 'certificate'; label: string; createdAt: string };
+
 export interface UserDashboard {
-  user: { fullName: string; level: number; totalXp: number };
+  user: { fullName: string; level: number; levelName: string; totalXp: number; progressPct: number };
   coursesInProgress: number;
   coursesCompleted: number;
   certificatesCount: number;
   badgeCount: number;
   courses: { title: string; slug: string; coverUrl: string | null; status: string; progressPct: number }[];
+  statusBreakdown: { name: string; value: number }[];
+  quizScoreTrend: { date: string; scorePct: number; quizTitle: string }[];
+  weeklyStudyMinutes: { week: string; minutes: number }[];
+  activityTimeline: ActivityEvent[];
 }
 
 export interface ProgressOverview {
@@ -190,6 +199,35 @@ export interface AdminOverview {
   quizPassRatePct: number;
   inactiveUsers: number;
   topCourses: { title: string; slug: string; enrollments: number }[];
+  newUsersTrend: { week: string; count: number }[];
+}
+
+export interface AdminCourseStats {
+  title: string;
+  slug: string;
+  enrollments: number;
+  completions: number;
+  completionRatePct: number;
+  avgProgressPct: number;
+  avgQuizScore: number | null;
+}
+
+export interface MostMissedQuestion {
+  questionId: string;
+  prompt: string;
+  quizId: string;
+  quizTitle: string;
+  totalAnswers: number;
+  incorrectAnswers: number;
+  errorRatePct: number;
+}
+
+export interface InactiveUser {
+  id: string;
+  fullName: string;
+  email: string;
+  lastActiveDate: string | null;
+  currentStreak: number;
 }
 
 export type ContentStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
