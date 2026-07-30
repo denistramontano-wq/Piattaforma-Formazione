@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/games', label: 'Mini giochi', icon: '🎮' },
   { href: '/downloads', label: 'Download', icon: '⬇️' },
   { href: '/faq', label: 'FAQ', icon: '💬' },
+  { href: '/assistant', label: 'Assistente IA', icon: '🤖' },
   { href: '/progress', label: 'Progressi', icon: '📈' },
   { href: '/certificates', label: 'Certificati', icon: '🏅' },
 ];

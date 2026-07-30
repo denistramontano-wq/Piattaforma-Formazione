@@ -82,6 +82,8 @@ model User {
   certificates  Certificate[]
   userLevel     UserLevel?
   userBadges    UserBadge[]
+  aiGenerationsReviewed AiGeneration[]
+  chatConversations     ChatConversation[]
 }
 
 model Category {
@@ -322,4 +324,77 @@ model UserBadge {
   earnedAt DateTime @default(now())
 
   @@id([userId, badgeId])
+}
+
+// --- Intelligenza Artificiale (docs/06-intelligenza-artificiale.md) ---
+
+enum AiSourceType {
+  DOCUMENT
+  LESSON
+}
+
+enum AiGenerationType {
+  SUMMARY
+  FLASHCARDS
+  QUIZ
+  CONCEPT_MAP
+}
+
+enum AiReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model AiGeneration {
+  id             String            @id @default(uuid())
+  sourceType     AiSourceType
+  sourceId       String
+  sourceTitle    String
+  generationType AiGenerationType
+  /// Output strutturato specifico per tipo (testo riassunto, array flashcard, domande quiz, nodi mappa)
+  output         Json
+  provider       String
+  reviewStatus   AiReviewStatus    @default(PENDING)
+  reviewedById   String?
+  reviewedBy     User?             @relation(fields: [reviewedById], references: [id])
+  /// Id dell'entità reale creata all'approvazione (Quiz.id o MiniGame.id)
+  resultRefId    String?
+  createdAt      DateTime          @default(now())
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+model ChatConversation {
+  id        String        @id @default(uuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  scopeType String        @default("global")
+  scopeId   String?
+  createdAt DateTime      @default(now())
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id             String           @id @default(uuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           ChatRole
+  content        String
+  /// Elenco fonti citate: [{ type, id, title, url }]
+  sources        Json?
+  createdAt      DateTime         @default(now())
+}
+
+model AiUsageLog {
+  id           String   @id @default(uuid())
+  kind         String
+  provider     String
+  tokensInput  Int      @default(0)
+  tokensOutput Int      @default(0)
+  costUsd      Float    @default(0)
+  createdAt    DateTime @default(now())
 }

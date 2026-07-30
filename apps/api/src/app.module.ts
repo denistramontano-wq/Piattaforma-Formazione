@@ -20,6 +20,7 @@ import { UploadsModule } from './modules/uploads/uploads.module';
 import { AdminCategoriesModule } from './modules/admin-categories/admin-categories.module';
 import { AdminCoursesModule } from './modules/admin-courses/admin-courses.module';
 import { SearchModule } from './modules/search/search.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { SearchModule } from './modules/search/search.module';
     AdminCategoriesModule,
     AdminCoursesModule,
     SearchModule,
+    AiModule,
   ],
   controllers: [AppController],
 })

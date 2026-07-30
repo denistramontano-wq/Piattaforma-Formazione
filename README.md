@@ -2,7 +2,14 @@
 
 Repository del progetto. La progettazione completa (UX, architettura, database, roadmap) è in [`docs/`](docs/00-README.md).
 
-Questo scaffold implementa il **capitolo 01 — Struttura e sezioni della piattaforma**: le 15 sezioni funzionali (Home, Dashboard, Catalogo corsi, Categorie, Manuali, Video, Quiz, Mini giochi, Download, FAQ, Profilo, Progressi, Certificati, Dashboard amministratore) come pagine funzionanti collegate a un'API reale, con dati demo seedati. L'editor CMS no-code (capitolo 02), la ricerca federata (capitolo 03) e l'assistente IA (capitolo 06) sono i prossimi moduli pianificati.
+Questo scaffold implementa progressivamente i capitoli del documento di progettazione:
+
+- **01 — Struttura e sezioni**: le 15 sezioni funzionali (Home, Dashboard, Catalogo corsi, Categorie, Manuali, Video, Quiz, Mini giochi, Download, FAQ, Profilo, Progressi, Certificati, Dashboard amministratore) come pagine funzionanti collegate a un'API reale, con dati demo seedati.
+- **02 — Gestione contenuti**: editor CMS no-code (corsi/moduli/lezioni, categorie, manuali con versioning, upload file, pubblicazione programmata).
+- **03 — Sistema di ricerca**: motore federato full-text (PostgreSQL) su corsi/manuali/video/quiz/giochi/FAQ, incluso il testo estratto dai PDF.
+- **06 — Intelligenza Artificiale**: generazione di riassunti/flashcard/quiz/mappe concettuali con revisione admin, e assistente virtuale RAG che risponde solo sui materiali caricati citando le fonti. Funziona anche **senza** chiave API (provider locale deterministico) — vedi sotto.
+
+I capitoli restanti (gamification avanzata, dashboard analitiche approfondite, ecc.) sono pianificati.
 
 ## Struttura del repository
 
@@ -47,6 +54,10 @@ npm run dev
 ```
 
 App disponibile su `http://localhost:3000`.
+
+## Modulo IA (senza chiave API)
+
+Il generatore di contenuti (`/admin/ai-generator`) e l'assistente virtuale (`/assistant`) funzionano fin da subito con un provider locale deterministico (nessuna chiamata esterna, nessun costo): riassunti estrattivi, flashcard e quiz per estrazione di parole chiave, mappe concettuali per co-occorrenza, risposte composte dagli estratti più pertinenti dei materiali. Per usare Anthropic Claude al posto del provider locale, imposta `ANTHROPIC_API_KEY` in `apps/api/.env` (vedi `.env.example`): il passaggio è automatico, senza altre modifiche.
 
 ## Utente demo
 

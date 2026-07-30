@@ -30,6 +30,9 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/documents" className="btn-secondary">
             Gestisci manuali
           </Link>
+          <Link href="/admin/ai-generator" className="btn-secondary">
+            🤖 Generatore IA
+          </Link>
         </div>
       </div>
 
