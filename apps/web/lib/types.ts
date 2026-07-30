@@ -258,3 +258,26 @@ export interface AdminDocument {
   categoryId?: string | null;
   versions: { versionNumber: number; fileUrl: string; changelog: string | null; isCurrent: boolean; createdAt: string }[];
 }
+
+export type SearchResultType = 'course' | 'manual' | 'video' | 'quiz' | 'game' | 'faq';
+
+export interface SearchResult {
+  type: SearchResultType;
+  id: string;
+  title: string;
+  snippet: string | null;
+  url: string;
+  rank: number;
+}
+
+export interface SearchResponse {
+  query: string;
+  total: number;
+  results: SearchResult[];
+}
+
+export interface SuggestItem {
+  type: SearchResultType;
+  title: string;
+  url: string;
+}

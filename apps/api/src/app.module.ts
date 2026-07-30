@@ -19,6 +19,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { AdminCategoriesModule } from './modules/admin-categories/admin-categories.module';
 import { AdminCoursesModule } from './modules/admin-courses/admin-courses.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AdminCoursesModule } from './modules/admin-courses/admin-courses.module
     UploadsModule,
     AdminCategoriesModule,
     AdminCoursesModule,
+    SearchModule,
   ],
   controllers: [AppController],
 })

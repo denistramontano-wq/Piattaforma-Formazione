@@ -197,6 +197,8 @@ model DocumentVersion {
   changelog     String?
   isCurrent     Boolean  @default(true)
   createdAt     DateTime @default(now())
+  /// Testo estratto dal PDF all'upload, usato dal motore di ricerca full-text (docs/03-sistema-ricerca.md)
+  extractedText String?
 }
 
 model Video {
