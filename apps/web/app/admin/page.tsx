@@ -18,11 +18,19 @@ export default async function AdminDashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Dashboard amministratore' }]} />
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Dashboard amministratore</h1>
-        <Link href="/admin/courses" className="btn-secondary">
-          Gestisci corsi
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/courses" className="btn-secondary">
+            Gestisci corsi
+          </Link>
+          <Link href="/admin/categories" className="btn-secondary">
+            Gestisci categorie
+          </Link>
+          <Link href="/admin/documents" className="btn-secondary">
+            Gestisci manuali
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -49,10 +57,6 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      <p className="text-xs text-slate-400">
-        L'editor CMS completo (creazione corsi/moduli/lezioni no-code) è descritto in docs/02-gestione-contenuti.md
-        ed è pianificato come prossimo modulo dello scaffold.
-      </p>
     </div>
   );
 }

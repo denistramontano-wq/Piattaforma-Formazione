@@ -5,6 +5,7 @@ node_modules/
 dist/
 .next/
 out/
+*.tsbuildinfo
 
 # Env files
 .env
@@ -19,6 +20,10 @@ npm-debug.log*
 
 # Prisma
 apps/api/prisma/dev.db
+
+# File caricati dall'admin in locale (docs/02-gestione-contenuti.md)
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
 
 # OS
 .DS_Store

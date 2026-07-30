@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { CommonModule } from './common/common.module';
@@ -15,10 +16,14 @@ import { UsersModule } from './modules/users/users.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { CertificatesModule } from './modules/certificates/certificates.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
+import { AdminCategoriesModule } from './modules/admin-categories/admin-categories.module';
+import { AdminCoursesModule } from './modules/admin-courses/admin-courses.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     CommonModule,
     CategoriesModule,
@@ -33,6 +38,9 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     ProgressModule,
     CertificatesModule,
     DashboardModule,
+    UploadsModule,
+    AdminCategoriesModule,
+    AdminCoursesModule,
   ],
   controllers: [AppController],
 })

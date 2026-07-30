@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
  * operano sull'utente demo seedato dal database.
  */
 export const DEMO_USER_EMAIL = 'maria.rossi@demo.piattaforma-formazione.it';
+export const DEMO_ADMIN_EMAIL = 'admin@demo.piattaforma-formazione.it';
 
 @Injectable()
 export class CurrentUserService {
@@ -14,5 +15,14 @@ export class CurrentUserService {
 
   getCurrentUser() {
     return this.prisma.user.findUniqueOrThrow({ where: { email: DEMO_USER_EMAIL } });
+  }
+
+  /**
+   * Le rotte /admin/* agiscono come l'utente demo con ruolo ADMIN. Un vero controllo
+   * RBAC (verifica ruolo + permessi sulla richiesta autenticata) è pianificato insieme
+   * all'autenticazione reale — vedi docs/09-architettura-tecnica.md.
+   */
+  getCurrentAdminUser() {
+    return this.prisma.user.findUniqueOrThrow({ where: { email: DEMO_ADMIN_EMAIL } });
   }
 }

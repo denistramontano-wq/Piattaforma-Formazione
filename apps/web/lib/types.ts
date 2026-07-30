@@ -191,3 +191,70 @@ export interface AdminOverview {
   inactiveUsers: number;
   topCourses: { title: string; slug: string; enrollments: number }[];
 }
+
+export type ContentStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
+
+export interface CategoryFlat {
+  id: string;
+  name: string;
+  slug: string;
+  parentId: string | null;
+  depth: number;
+  usageCount: number;
+}
+
+export interface AdminCourseListItem {
+  id: string;
+  title: string;
+  slug: string;
+  status: ContentStatus;
+  level: Level;
+  publishAt: string | null;
+  categories: { id: string; name: string }[];
+  modules: { id: string; lessons: { id: string }[] }[];
+  _count: { enrollments: number };
+}
+
+export interface AdminLesson {
+  id: string;
+  title: string;
+  orderIndex: number;
+  estimatedMinutes: number;
+  contentType: 'TEXT' | 'VIDEO' | 'PDF';
+  contentBody: string | null;
+  videoUrl: string | null;
+}
+
+export interface AdminModule {
+  id: string;
+  title: string;
+  orderIndex: number;
+  lessons: AdminLesson[];
+}
+
+export interface AdminCourseDetail {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  coverUrl: string | null;
+  level: Level;
+  estimatedMinutes: number;
+  status: ContentStatus;
+  publishAt: string | null;
+  categories: { id: string; name: string }[];
+  tags: { id: string; name: string }[];
+  modules: AdminModule[];
+}
+
+export interface AdminDocument {
+  id: string;
+  title: string;
+  description: string | null;
+  author: string | null;
+  level: Level;
+  estimatedMinutes: number;
+  category: { id: string; name: string } | null;
+  categoryId?: string | null;
+  versions: { versionNumber: number; fileUrl: string; changelog: string | null; isCurrent: boolean; createdAt: string }[];
+}
