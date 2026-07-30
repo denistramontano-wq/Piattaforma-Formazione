@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
 
 interface Pair {
@@ -19,16 +19,20 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function MemoryGame({ gameId, pairs }: { gameId: string; pairs: Pair[] }) {
-  const tiles = useMemo<Tile[]>(
+  // L'ordine mescolato va calcolato solo lato client: farlo durante il render (usato anche
+  // per il SSR) produrrebbe un ordine diverso tra server e client e un hydration mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const baseTiles = useMemo<Tile[]>(
     () =>
-      shuffle(
-        pairs.flatMap((p, i) => [
-          { key: `a-${i}`, label: p.a, pairId: i },
-          { key: `b-${i}`, label: p.b, pairId: i },
-        ]),
-      ),
+      pairs.flatMap((p, i) => [
+        { key: `a-${i}`, label: p.a, pairId: i },
+        { key: `b-${i}`, label: p.b, pairId: i },
+      ]),
     [pairs],
   );
+  const tiles = useMemo(() => (mounted ? shuffle(baseTiles) : baseTiles), [mounted, baseTiles]);
 
   const [selected, setSelected] = useState<string[]>([]);
   const [matched, setMatched] = useState<Set<number>>(new Set());

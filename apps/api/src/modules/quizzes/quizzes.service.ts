@@ -2,12 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CurrentUserService } from '../../common/current-user.service';
 import { isAnswerCorrect, stripCorrectAnswer } from './quiz-scoring.util';
+import { XpEngineService } from '../gamification/xp-engine.service';
+import { BadgeEngineService } from '../gamification/badge-engine.service';
 
 @Injectable()
 export class QuizzesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly currentUser: CurrentUserService,
+    private readonly xpEngine: XpEngineService,
+    private readonly badgeEngine: BadgeEngineService,
   ) {}
 
   async findAll() {
@@ -67,6 +71,11 @@ export class QuizzesService {
     await this.prisma.quizAttempt.create({
       data: { quizId: id, userId: user.id, scorePct, passed, submittedAt: new Date() },
     });
+
+    if (passed) {
+      await this.xpEngine.award(user.id, 'QUIZ_PASSED', { refType: 'Quiz', refId: id });
+    }
+    await this.badgeEngine.evaluate(user.id);
 
     return { scorePct, passed, details };
   }

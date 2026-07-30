@@ -3,6 +3,12 @@ import type { MiniGame } from '@/lib/types';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { FlashcardGame } from '@/components/games/FlashcardGame';
 import { MemoryGame } from '@/components/games/MemoryGame';
+import { DragDropGame } from '@/components/games/DragDropGame';
+import { PuzzleGame } from '@/components/games/PuzzleGame';
+import { TimedQuizGame } from '@/components/games/TimedQuizGame';
+import { EscapeRoomGame } from '@/components/games/EscapeRoomGame';
+import { FindErrorGame } from '@/components/games/FindErrorGame';
+import { ImageMatchGame } from '@/components/games/ImageMatchGame';
 
 export default async function GameDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -18,11 +24,34 @@ export default async function GameDetailPage({ params }: { params: Promise<{ id:
 
       {game.type === 'FLASHCARD' && <FlashcardGame gameId={game.id} cards={game.config.cards} />}
       {game.type === 'MEMORY' && <MemoryGame gameId={game.id} pairs={game.config.pairs} />}
-      {game.type !== 'FLASHCARD' && game.type !== 'MEMORY' && (
-        <div className="card p-8 text-center text-slate-500 dark:text-slate-400">
-          Questa tipologia di mini gioco ({game.type}) è pianificata per la versione 1.0 — vedi docs/05-gamification.md.
-        </div>
+      {game.type === 'DRAG_DROP' && (
+        <DragDropGame
+          gameId={game.id}
+          items={game.config.items}
+          zones={game.config.zones}
+          correctMap={game.config.correctMap}
+        />
       )}
+      {game.type === 'PUZZLE' && <PuzzleGame gameId={game.id} sentence={game.config.sentence} />}
+      {game.type === 'TIMED_QUIZ' && (
+        <TimedQuizGame
+          gameId={game.id}
+          timeLimitSeconds={game.config.timeLimitSeconds}
+          questions={game.config.questions}
+        />
+      )}
+      {game.type === 'ESCAPE_ROOM' && (
+        <EscapeRoomGame gameId={game.id} intro={game.config.intro} steps={game.config.steps} />
+      )}
+      {game.type === 'FIND_ERROR' && (
+        <FindErrorGame
+          gameId={game.id}
+          tokens={game.config.tokens}
+          errorIndexes={game.config.errorIndexes}
+          explanations={game.config.explanations}
+        />
+      )}
+      {game.type === 'IMAGE_MATCH' && <ImageMatchGame gameId={game.id} pairs={game.config.pairs} />}
     </div>
   );
 }

@@ -21,6 +21,7 @@ import { AdminCategoriesModule } from './modules/admin-categories/admin-categori
 import { AdminCoursesModule } from './modules/admin-courses/admin-courses.module';
 import { SearchModule } from './modules/search/search.module';
 import { AiModule } from './modules/ai/ai.module';
+import { GamificationModule } from './modules/gamification/gamification.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AiModule } from './modules/ai/ai.module';
     AdminCoursesModule,
     SearchModule,
     AiModule,
+    GamificationModule,
   ],
   controllers: [AppController],
 })

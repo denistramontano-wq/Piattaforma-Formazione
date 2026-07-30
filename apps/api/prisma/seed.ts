@@ -438,12 +438,29 @@ async function main() {
     },
   });
 
-  // Badge demo
+  // Regole XP (docs/05 §5.2 — configurabili da /admin/xp-rules)
+  const xpRules: { action: string; points: number; description: string }[] = [
+    { action: 'LESSON_COMPLETED', points: 10, description: 'Completamento di una lezione' },
+    { action: 'COURSE_COMPLETED', points: 50, description: 'Completamento di un intero corso' },
+    { action: 'QUIZ_PASSED', points: 20, description: 'Superamento di un quiz' },
+    { action: 'GAME_COMPLETED', points: 15, description: 'Completamento di un mini gioco' },
+    { action: 'DAILY_STREAK', points: 5, description: 'Accesso giornaliero alla piattaforma' },
+  ];
+  for (const rule of xpRules) {
+    await prisma.xpRule.upsert({
+      where: { action: rule.action },
+      update: {},
+      create: rule,
+    });
+  }
+
+  // Badge demo (docs/05 §5.2 — il `code` collega il badge al motore di regole, vedi badge-engine.service.ts)
   const badge = await prisma.badge.upsert({
     where: { id: 'seed-badge-primo-corso' },
     update: {},
     create: {
       id: 'seed-badge-primo-corso',
+      code: 'PRIMO_CORSO',
       name: 'Primo corso completato',
       criteriaDescription: 'Assegnato al completamento del primo corso sulla piattaforma.',
     },
@@ -452,6 +469,200 @@ async function main() {
     where: { userId_badgeId: { userId: student.id, badgeId: badge.id } },
     update: {},
     create: { userId: student.id, badgeId: badge.id },
+  });
+  await prisma.badge.upsert({
+    where: { id: 'seed-badge-streak-7' },
+    update: {},
+    create: {
+      id: 'seed-badge-streak-7',
+      code: 'STREAK_7',
+      name: '7 giorni di fila',
+      criteriaDescription: 'Assegnato per 7 giorni consecutivi di accesso alla piattaforma.',
+    },
+  });
+  await prisma.badge.upsert({
+    where: { id: 'seed-badge-quiz-perfetto' },
+    update: {},
+    create: {
+      id: 'seed-badge-quiz-perfetto',
+      code: 'QUIZ_PERFETTO',
+      name: 'Quiz perfetto',
+      criteriaDescription: 'Assegnato per il 100% di risposte corrette in un quiz di livello avanzato.',
+    },
+  });
+  await prisma.badge.upsert({
+    where: { id: 'seed-badge-esploratore-giochi' },
+    update: {},
+    create: {
+      id: 'seed-badge-esploratore-giochi',
+      code: 'ESPLORATORE_GIOCHI',
+      name: 'Esploratore dei mini giochi',
+      criteriaDescription: 'Assegnato per aver giocato ad almeno 3 tipi diversi di mini gioco.',
+    },
+  });
+
+  // Mini giochi — tipologie aggiuntive (docs/05 §5.1)
+  await prisma.miniGame.upsert({
+    where: { id: 'seed-game-dragdrop' },
+    update: {},
+    create: {
+      id: 'seed-game-dragdrop',
+      title: 'Drag & Drop — Colloca i DPI',
+      type: 'DRAG_DROP',
+      description: 'Trascina ogni dispositivo di protezione nell’area del reparto corretto.',
+      difficulty: 'BASE',
+      config: {
+        items: [
+          { id: 'i1', label: 'Casco' },
+          { id: 'i2', label: 'Guanti anti-taglio' },
+          { id: 'i3', label: 'Otoprotettori' },
+          { id: 'i4', label: 'Occhiali di protezione' },
+        ],
+        zones: [
+          { id: 'z1', label: 'Cantiere edile' },
+          { id: 'z2', label: 'Officina meccanica' },
+          { id: 'z3', label: 'Reparto rumoroso' },
+          { id: 'z4', label: 'Laboratorio chimico' },
+        ],
+        correctMap: { i1: 'z1', i2: 'z2', i3: 'z3', i4: 'z4' },
+      },
+    },
+  });
+
+  await prisma.miniGame.upsert({
+    where: { id: 'seed-game-puzzle' },
+    update: {},
+    create: {
+      id: 'seed-game-puzzle',
+      title: 'Puzzle — Ricomponi la procedura',
+      type: 'PUZZLE',
+      description: 'Rimetti in ordine le parole per ricostruire la regola di sicurezza.',
+      difficulty: 'BASE',
+      config: {
+        sentence: 'In caso di incendio mantieni la calma e raggiungi l’uscita di emergenza più vicina',
+      },
+    },
+  });
+
+  await prisma.miniGame.upsert({
+    where: { id: 'seed-game-timedquiz' },
+    update: {},
+    create: {
+      id: 'seed-game-timedquiz',
+      title: 'Quiz a tempo — Emergenze in azienda',
+      type: 'TIMED_QUIZ',
+      description: 'Rispondi il più velocemente possibile: più sei rapido, più punti bonus ottieni.',
+      difficulty: 'INTERMEDIO',
+      config: {
+        timeLimitSeconds: 60,
+        questions: [
+          {
+            id: 'q1',
+            prompt: 'Qual è il numero unico per le emergenze in Italia?',
+            options: ['112', '115', '118', '113'],
+            correctIndex: 0,
+          },
+          {
+            id: 'q2',
+            prompt: 'Un estintore a CO2 è adatto per un incendio di classe...',
+            options: ['A (solidi)', 'B (liquidi infiammabili)', 'D (metalli)', 'Nessuna'],
+            correctIndex: 1,
+          },
+          {
+            id: 'q3',
+            prompt: 'Il triangolo di sicurezza va posizionato a una distanza minima di:',
+            options: ['5 metri', '10 metri', '50 metri', 'Non è obbligatorio'],
+            correctIndex: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.miniGame.upsert({
+    where: { id: 'seed-game-escaperoom' },
+    update: {},
+    create: {
+      id: 'seed-game-escaperoom',
+      title: 'Escape Room — Evacuazione dallo stabilimento',
+      type: 'ESCAPE_ROOM',
+      description: 'Risolvi in sequenza gli enigmi di sicurezza per uscire in tempo dallo stabilimento.',
+      difficulty: 'AVANZATO',
+      config: {
+        intro: 'È scattato l’allarme antincendio. Risolvi ogni prova per avanzare verso l’uscita.',
+        steps: [
+          {
+            id: 's1',
+            narrative: 'Senti l’allarme suonare nel reparto produzione.',
+            prompt: 'Qual è la prima cosa da fare?',
+            options: ['Continuare a lavorare', 'Mantenere la calma e prepararsi a evacuare', 'Correre verso gli ascensori'],
+            correctIndex: 1,
+            unlockNarrative: 'Bene, ti allontani dalla postazione senza panico.',
+          },
+          {
+            id: 's2',
+            narrative: 'Sei nel corridoio principale, pieno di fumo leggero.',
+            prompt: 'Come ti muovi nel corridoio con fumo?',
+            options: ['In piedi il più velocemente possibile', 'Chinato, restando vicino al muro', 'Usando l’ascensore più vicino'],
+            correctIndex: 1,
+            unlockNarrative: 'Ti muovi chinato e raggiungi l’uscita di emergenza.',
+          },
+          {
+            id: 's3',
+            narrative: 'Sei arrivato al punto di raccolta.',
+            prompt: 'Cosa fai una volta al punto di raccolta?',
+            options: ['Te ne vai a casa', 'Attendi l’appello del preposto', 'Rientri per prendere gli effetti personali'],
+            correctIndex: 1,
+            unlockNarrative: 'Sei in salvo: l’appello conferma che tutti sono usciti.',
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.miniGame.upsert({
+    where: { id: 'seed-game-finderror' },
+    update: {},
+    create: {
+      id: 'seed-game-finderror',
+      title: 'Trova l’errore — Postazione al videoterminale',
+      type: 'FIND_ERROR',
+      description: 'Individua nel testo i comportamenti scorretti per la sicurezza sul lavoro.',
+      difficulty: 'INTERMEDIO',
+      config: {
+        tokens: [
+          'Prima', 'di', 'iniziare', 'il', 'turno,', 'Marco', 'ignora', 'le', 'istruzioni', 'di', 'sicurezza',
+          'e', 'toglie', 'i', 'guanti', 'di', 'protezione', 'per', 'lavorare', 'più', 'comodo.', 'Regola', 'lo',
+          'schienale', 'della', 'sedia', 'e', 'posiziona', 'lo', 'schermo', 'a', 'circa', 'un', 'braccio', 'di',
+          'distanza.',
+        ],
+        errorIndexes: [6, 13],
+        explanations: {
+          '6': 'Le istruzioni di sicurezza non vanno mai ignorate.',
+          '13': 'I DPI previsti non devono essere rimossi senza autorizzazione.',
+        },
+      },
+    },
+  });
+
+  await prisma.miniGame.upsert({
+    where: { id: 'seed-game-imagematch' },
+    update: {},
+    create: {
+      id: 'seed-game-imagematch',
+      title: 'Abbinamento immagini — Segnali di sicurezza',
+      type: 'IMAGE_MATCH',
+      description: 'Abbina ogni forma/colore di segnale al suo significato corretto.',
+      difficulty: 'BASE',
+      config: {
+        pairs: [
+          { emoji: '⛔', label: 'Divieto' },
+          { emoji: '⚠️', label: 'Attenzione/Pericolo' },
+          { emoji: '🟩', label: 'Salvataggio/Emergenza' },
+          { emoji: '🔵', label: 'Obbligo (es. indossare i DPI)' },
+        ],
+      },
+    },
   });
 
   console.log('Seed completato.');

@@ -75,6 +75,10 @@ model User {
   avatarUrl     String?
   role          Role           @default(STUDENT)
   createdAt     DateTime       @default(now())
+  /// Data (senza ora) dell'ultima attività registrata, per il calcolo della streak giornaliera (docs/05 §5.2)
+  lastActiveDate DateTime?
+  currentStreak  Int           @default(0)
+  longestStreak  Int           @default(0)
   coursesAuthored Course[]     @relation("CourseAuthor")
   enrollments   Enrollment[]
   quizAttempts  QuizAttempt[]
@@ -82,6 +86,7 @@ model User {
   certificates  Certificate[]
   userLevel     UserLevel?
   userBadges    UserBadge[]
+  xpEvents      XpEvent[]
   aiGenerationsReviewed AiGeneration[]
   chatConversations     ChatConversation[]
 }
@@ -310,6 +315,8 @@ model UserLevel {
 
 model Badge {
   id                 String      @id @default(uuid())
+  /// Codice stabile usato dal badge engine per collegare il badge alla regola di assegnazione (vedi badge-engine.service.ts)
+  code               String      @unique
   name               String
   criteriaDescription String?
   iconUrl            String?
@@ -324,6 +331,27 @@ model UserBadge {
   earnedAt DateTime @default(now())
 
   @@id([userId, badgeId])
+}
+
+/// Regola punti XP per azione (docs/05 §5.2), configurabile da admin
+model XpRule {
+  action      String @id
+  points      Int
+  description String
+}
+
+/// Log delle assegnazioni XP, base per classifiche a finestra temporale e storico attività
+model XpEvent {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  points    Int
+  refType   String?
+  refId     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 // --- Intelligenza Artificiale (docs/06-intelligenza-artificiale.md) ---

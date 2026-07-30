@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: '/videos', label: 'Video', icon: '🎬' },
   { href: '/quizzes', label: 'Quiz', icon: '❓' },
   { href: '/games', label: 'Mini giochi', icon: '🎮' },
+  { href: '/leaderboard', label: 'Classifica', icon: '🏆' },
   { href: '/downloads', label: 'Download', icon: '⬇️' },
   { href: '/faq', label: 'FAQ', icon: '💬' },
   { href: '/assistant', label: 'Assistente IA', icon: '🤖' },

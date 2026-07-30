@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CurrentUserService } from '../../common/current-user.service';
+import { XpEngineService } from '../gamification/xp-engine.service';
+import { BadgeEngineService } from '../gamification/badge-engine.service';
 
 @Injectable()
 export class LessonsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly currentUser: CurrentUserService,
+    private readonly xpEngine: XpEngineService,
+    private readonly badgeEngine: BadgeEngineService,
   ) {}
 
   async findOne(id: string) {
@@ -43,6 +47,11 @@ export class LessonsService {
       create: { userId: user.id, courseId: lesson.module.courseId },
     });
 
+    const existing = await this.prisma.lessonProgress.findUnique({
+      where: { enrollmentId_lessonId: { enrollmentId: enrollment.id, lessonId: id } },
+    });
+    const alreadyCompleted = existing?.completed ?? false;
+
     await this.prisma.lessonProgress.upsert({
       where: { enrollmentId_lessonId: { enrollmentId: enrollment.id, lessonId: id } },
       update: { completed: true, lastViewedAt: new Date() },
@@ -56,9 +65,10 @@ export class LessonsService {
       }),
     ]);
     const progressPct = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+    const wasCompleted = enrollment.status === 'COMPLETED';
     const isCompleted = progressPct >= 100;
 
-    return this.prisma.enrollment.update({
+    const updated = await this.prisma.enrollment.update({
       where: { id: enrollment.id },
       data: {
         progressPct,
@@ -66,5 +76,18 @@ export class LessonsService {
         completedAt: isCompleted ? new Date() : null,
       },
     });
+
+    if (!alreadyCompleted) {
+      await this.xpEngine.award(user.id, 'LESSON_COMPLETED', { refType: 'Lesson', refId: id });
+    }
+    if (isCompleted && !wasCompleted) {
+      await this.xpEngine.award(user.id, 'COURSE_COMPLETED', {
+        refType: 'Course',
+        refId: lesson.module.courseId,
+      });
+    }
+    await this.badgeEngine.evaluate(user.id);
+
+    return updated;
   }
 }

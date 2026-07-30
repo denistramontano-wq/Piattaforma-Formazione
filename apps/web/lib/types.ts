@@ -363,3 +363,64 @@ export interface ChatConversationDto {
   id: string;
   messages: ChatMessageDto[];
 }
+
+// --- Gamification (docs/05-gamification.md) ---
+
+export interface GamificationBadge {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  iconUrl: string | null;
+  earned: boolean;
+  earnedAt: string | null;
+}
+
+export interface MyGamification {
+  totalXp: number;
+  level: number;
+  levelName: string;
+  currentLevelMinXp: number;
+  nextLevelXp: number | null;
+  progressPct: number;
+  currentStreak: number;
+  longestStreak: number;
+  badges: GamificationBadge[];
+  recentActivity: { action: string; points: number; createdAt: string }[];
+}
+
+export type LeaderboardPeriod = 'weekly' | 'monthly' | 'alltime';
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  fullName: string;
+  avatarUrl: string | null;
+  points: number;
+  isCurrentUser: boolean;
+}
+
+export interface LeaderboardResponse {
+  period: LeaderboardPeriod;
+  entries: LeaderboardEntry[];
+}
+
+export interface XpRule {
+  action: string;
+  points: number;
+  description: string;
+}
+
+export interface AdminBadge {
+  id: string;
+  code: string;
+  name: string;
+  criteriaDescription: string | null;
+  iconUrl: string | null;
+  hasAutoAwardRule: boolean;
+}
+
+export interface BadgeCodeOption {
+  code: string;
+  label: string;
+}
