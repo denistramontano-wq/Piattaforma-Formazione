@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -77,9 +78,11 @@ export function Topbar() {
 
   return (
     <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
-      <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-semibold text-accent-600 dark:text-accent-400">
-        {/* TODO: sostituire con il logo ATM fornito dall'utente (immagine non ancora disponibile) */}
-        Formazione ADL
+      <Link href="/" className="flex shrink-0 items-center gap-2">
+        <span className="flex items-center rounded-md bg-white px-1.5 py-1 shadow-sm ring-1 ring-slate-200">
+          <Image src="/logo-atm-mark.png" alt="ATM" width={84} height={22} priority />
+        </span>
+        <span className="text-lg font-semibold text-accent-600 dark:text-accent-400">Formazione ADL</span>
       </Link>
       <div ref={containerRef} className="relative flex-1 max-w-xl">
         <form onSubmit={handleSubmit}>
