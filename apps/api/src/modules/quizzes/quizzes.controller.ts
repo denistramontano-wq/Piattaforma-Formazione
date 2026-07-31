@@ -1,22 +1,27 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { QuizzesService } from './quizzes.service';
 
-@Controller('quizzes')
+@Controller()
 export class QuizzesController {
   constructor(private readonly service: QuizzesService) {}
 
-  @Get()
+  @Get('quizzes')
   findAll() {
     return this.service.findAll();
   }
 
-  @Get(':id')
+  @Get('quizzes/:id')
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
-  @Post(':id/submit')
-  submit(@Param('id') id: string, @Body('answers') answers: Record<string, any>) {
-    return this.service.submit(id, answers ?? {});
+  @Post('quizzes/:id/attempts')
+  startAttempt(@Param('id') id: string) {
+    return this.service.startAttempt(id);
+  }
+
+  @Post('attempts/:attemptId/submit')
+  submitAttempt(@Param('attemptId') attemptId: string, @Body('answers') answers: Record<string, any>) {
+    return this.service.submitAttempt(attemptId, answers ?? {});
   }
 }

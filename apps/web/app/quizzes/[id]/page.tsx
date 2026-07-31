@@ -1,11 +1,11 @@
 import { api } from '@/lib/api';
-import type { QuizDetail } from '@/lib/types';
+import type { QuizPreview } from '@/lib/types';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { QuizPlayer } from '@/components/quiz/QuizPlayer';
 
 export default async function QuizDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const quiz = await api.get<QuizDetail>(`/quizzes/${id}`);
+  const quiz = await api.get<QuizPreview>(`/quizzes/${id}`);
 
   return (
     <div className="flex flex-col gap-6">

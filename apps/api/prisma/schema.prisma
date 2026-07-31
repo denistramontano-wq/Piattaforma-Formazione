@@ -219,6 +219,11 @@ model Video {
   level            Level    @default(BASE)
 }
 
+enum QuestionMode {
+  SEQUENTIAL
+  RANDOM
+}
+
 model Quiz {
   id               String   @id @default(uuid())
   title            String
@@ -227,6 +232,13 @@ model Quiz {
   lesson           Lesson?  @relation(fields: [lessonId], references: [id])
   passThresholdPct Float    @default(60)
   level            Level    @default(BASE)
+  /// Numero massimo di tentativi consentiti; null = illimitati (docs/04 §4.3)
+  maxAttempts      Int?
+  /// Tempo totale a disposizione per il tentativo, in secondi; null = nessun limite
+  timeLimitSeconds Int?
+  questionMode     QuestionMode @default(SEQUENTIAL)
+  /// Se impostato, ad ogni tentativo vengono estratte casualmente questo numero di domande dal pool totale ("banca domande")
+  bankSize         Int?
   questions        Question[]
   attempts         QuizAttempt[]
 }
@@ -241,6 +253,7 @@ model Question {
   explanation  String?
   scoreWeight  Int          @default(1)
   difficulty   Level        @default(BASE)
+  orderIndex   Int          @default(0)
   attemptAnswers QuizAttemptAnswer[]
 }
 
@@ -250,6 +263,8 @@ model QuizAttempt {
   quiz        Quiz      @relation(fields: [quizId], references: [id])
   userId      String
   user        User      @relation(fields: [userId], references: [id])
+  /// Id e ordine delle domande estratte/presentate per questo tentativo (docs/04 §4.1 banca domande)
+  questionIds Json
   scorePct    Float?
   passed      Boolean?
   startedAt   DateTime  @default(now())

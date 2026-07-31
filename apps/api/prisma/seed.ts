@@ -276,6 +276,7 @@ async function main() {
       questions: {
         create: [
           {
+            orderIndex: 1,
             type: 'MULTIPLE_CHOICE',
             prompt: 'Quale normativa italiana disciplina la sicurezza sul lavoro?',
             payload: {
@@ -291,6 +292,7 @@ async function main() {
             difficulty: 'BASE',
           },
           {
+            orderIndex: 2,
             type: 'TRUE_FALSE',
             prompt: 'Il datore di lavoro può delegare tutte le responsabilità in materia di sicurezza.',
             payload: { correct: false },
@@ -299,6 +301,7 @@ async function main() {
             difficulty: 'BASE',
           },
           {
+            orderIndex: 3,
             type: 'FILL_BLANK',
             prompt: 'Completa: i DPI sono i ___ di Protezione Individuale.',
             payload: { text: 'i DPI sono i {{1}} di Protezione Individuale.', blanks: { '1': 'Dispositivi' } },
@@ -307,6 +310,7 @@ async function main() {
             difficulty: 'BASE',
           },
           {
+            orderIndex: 4,
             type: 'ORDERING',
             prompt: 'Ordina correttamente le fasi di un’evacuazione.',
             payload: {
@@ -326,6 +330,98 @@ async function main() {
     },
   });
   void quiz;
+
+  // Quiz avanzato: banca domande, tentativi limitati, tempo limite, ordine casuale, drag&drop (docs/04)
+  await prisma.quiz.upsert({
+    where: { id: 'seed-quiz-avanzato' },
+    update: {},
+    create: {
+      id: 'seed-quiz-avanzato',
+      title: 'Verifica avanzata — Gestione delle emergenze',
+      description: 'Quiz a estrazione casuale con tempo limite e numero massimo di tentativi.',
+      passThresholdPct: 70,
+      level: 'AVANZATO',
+      maxAttempts: 2,
+      timeLimitSeconds: 180,
+      questionMode: 'RANDOM',
+      bankSize: 4,
+      questions: {
+        create: [
+          {
+            orderIndex: 1,
+            type: 'DRAG_DROP',
+            prompt: 'Colloca ogni dispositivo antincendio nell’area corretta.',
+            payload: {
+              items: [
+                { id: 'i1', label: 'Estintore a CO2' },
+                { id: 'i2', label: 'Idrante' },
+                { id: 'i3', label: 'Rilevatore di fumo' },
+              ],
+              targets: [
+                { id: 't1', label: 'Quadro elettrico' },
+                { id: 't2', label: 'Corridoio principale' },
+                { id: 't3', label: 'Controsoffitto ufficio' },
+              ],
+              correctMap: { i1: 't1', i2: 't2', i3: 't3' },
+            },
+            explanation: 'Gli estintori a CO2 sono adatti per incendi elettrici; gli idranti coprono le vie di fuga.',
+            scoreWeight: 2,
+            difficulty: 'AVANZATO',
+          },
+          {
+            orderIndex: 2,
+            type: 'MULTIPLE_CHOICE',
+            prompt: 'Chi coordina l’evacuazione in caso di emergenza?',
+            payload: {
+              options: [
+                { id: 'a', text: 'Il primo che se ne accorge' },
+                { id: 'b', text: 'Gli addetti antincendio designati' },
+                { id: 'c', text: 'Nessuno, ognuno per sé' },
+              ],
+              correct: ['b'],
+            },
+            explanation: 'Gli addetti designati (D.Lgs. 81/2008) coordinano l’evacuazione.',
+            scoreWeight: 1,
+            difficulty: 'INTERMEDIO',
+          },
+          {
+            orderIndex: 3,
+            type: 'TRUE_FALSE',
+            prompt: 'In caso di incendio è sempre corretto usare l’ascensore per scendere più velocemente.',
+            payload: { correct: false },
+            explanation: 'Gli ascensori vanno sempre evitati in caso di incendio.',
+            scoreWeight: 1,
+            difficulty: 'BASE',
+          },
+          {
+            orderIndex: 4,
+            type: 'IMAGE_CHOICE',
+            prompt: 'Quale simbolo indica il punto di raccolta?',
+            payload: {
+              options: [
+                { id: 'a', imageUrl: '🟩 Verde con persone che corrono verso un punto' },
+                { id: 'b', imageUrl: '⛔ Cerchio rosso' },
+                { id: 'c', imageUrl: '⚠️ Triangolo giallo' },
+              ],
+              correct: ['a'],
+            },
+            explanation: 'I segnali di salvataggio/emergenza sono verdi e quadrati/rettangolari.',
+            scoreWeight: 1,
+            difficulty: 'BASE',
+          },
+          {
+            orderIndex: 5,
+            type: 'OPEN_TEXT',
+            prompt: 'Descrivi brevemente cosa fare al suono dell’allarme antincendio.',
+            payload: { keywords: ['calma', 'evacu', 'uscita', 'punto di raccolta'] },
+            explanation: 'Risposta valutata per parole chiave: mantenere la calma, evacuare verso l’uscita più vicina, raggiungere il punto di raccolta.',
+            scoreWeight: 1,
+            difficulty: 'INTERMEDIO',
+          },
+        ],
+      },
+    },
+  });
 
   // Mini giochi
   await prisma.miniGame.upsert({

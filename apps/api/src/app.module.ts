@@ -19,6 +19,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { AdminCategoriesModule } from './modules/admin-categories/admin-categories.module';
 import { AdminCoursesModule } from './modules/admin-courses/admin-courses.module';
+import { AdminQuizzesModule } from './modules/admin-quizzes/admin-quizzes.module';
 import { SearchModule } from './modules/search/search.module';
 import { AiModule } from './modules/ai/ai.module';
 import { GamificationModule } from './modules/gamification/gamification.module';
@@ -44,6 +45,7 @@ import { GamificationModule } from './modules/gamification/gamification.module';
     UploadsModule,
     AdminCategoriesModule,
     AdminCoursesModule,
+    AdminQuizzesModule,
     SearchModule,
     AiModule,
     GamificationModule,

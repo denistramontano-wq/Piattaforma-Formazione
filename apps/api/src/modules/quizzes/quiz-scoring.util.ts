@@ -11,6 +11,16 @@ type QuestionType =
   | 'ORDERING'
   | 'IMAGE_CHOICE';
 
+/** Fisher-Yates, usato per la banca domande e la modalità "ordine casuale" (docs/04 §4.1/§4.3) */
+export function shuffle<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 export function stripCorrectAnswer(type: QuestionType, payload: any) {
   const clone = structuredClone(payload);
   switch (type) {

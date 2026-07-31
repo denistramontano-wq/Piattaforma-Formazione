@@ -90,18 +90,83 @@ export interface QuizQuestion {
   difficulty: Level;
 }
 
-export interface QuizDetail {
+export interface QuizPreview {
   id: string;
   title: string;
   description: string | null;
   passThresholdPct: number;
+  level: Level;
+  questionCount: number;
+  maxAttempts: number | null;
+  timeLimitSeconds: number | null;
+  attemptsUsed: number;
+  canAttempt: boolean;
+}
+
+export interface QuizAttemptStart {
+  attemptId: string;
+  timeLimitSeconds: number | null;
   questions: QuizQuestion[];
 }
 
 export interface QuizResult {
   scorePct: number;
   passed: boolean;
+  attemptsUsed: number;
+  maxAttempts: number | null;
+  canRetry: boolean;
   details: { questionId: string; correct: boolean; explanation: string | null }[];
+}
+
+// --- Admin quiz editor (docs/04-sistema-quiz.md) ---
+
+export type QuestionMode = 'SEQUENTIAL' | 'RANDOM';
+
+export interface AdminQuizListItem {
+  id: string;
+  title: string;
+  level: Level;
+  lessonTitle: string | null;
+  questionCount: number;
+  attemptCount: number;
+}
+
+export interface AdminQuestion {
+  id: string;
+  quizId: string;
+  type: string;
+  prompt: string;
+  payload: any;
+  explanation: string | null;
+  scoreWeight: number;
+  difficulty: Level;
+  orderIndex: number;
+}
+
+export interface AdminQuizDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  passThresholdPct: number;
+  level: Level;
+  maxAttempts: number | null;
+  timeLimitSeconds: number | null;
+  questionMode: QuestionMode;
+  bankSize: number | null;
+  questions: AdminQuestion[];
+}
+
+export interface QuizAnalytics {
+  attemptCount: number;
+  avgScorePct: number;
+  passRatePct: number;
+  questions: {
+    questionId: string;
+    prompt: string;
+    totalAnswers: number;
+    incorrectAnswers: number;
+    errorRatePct: number | null;
+  }[];
 }
 
 export interface MiniGame {
