@@ -6,8 +6,8 @@ import { Topbar } from '@/components/layout/Topbar';
 import { AssistantWidget } from '@/components/assistant/AssistantWidget';
 
 export const metadata: Metadata = {
-  title: 'Piattaforma Formazione',
-  description: 'Piattaforma web per la formazione: corsi, manuali, video, quiz e mini giochi.',
+  title: 'Formazione ADL',
+  description: 'Formazione ADL: corsi, manuali, video, quiz e mini giochi.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,4 @@
-# Piattaforma di Formazione
+# Formazione ADL
 
 Repository del progetto. La progettazione completa (UX, architettura, database, roadmap) è in [`docs/`](docs/00-README.md).
 
