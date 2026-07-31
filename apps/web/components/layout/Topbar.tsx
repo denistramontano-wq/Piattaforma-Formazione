@@ -16,7 +16,9 @@ export function Topbar() {
   const [suggestions, setSuggestions] = useState<SuggestItem[]>([]);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -47,10 +49,15 @@ export function Topbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (mobileSearchOpen) mobileInputRef.current?.focus();
+  }, [mobileSearchOpen]);
+
   function goToResults() {
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
       setOpen(false);
+      setMobileSearchOpen(false);
     }
   }
 
@@ -59,12 +66,18 @@ export function Topbar() {
     if (activeIndex >= 0 && suggestions[activeIndex]) {
       router.push(suggestions[activeIndex].url);
       setOpen(false);
+      setMobileSearchOpen(false);
     } else {
       goToResults();
     }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Escape') {
+      setOpen(false);
+      setMobileSearchOpen(false);
+      return;
+    }
     if (!open || suggestions.length === 0) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -72,69 +85,103 @@ export function Topbar() {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActiveIndex((i) => Math.max(i - 1, -1));
-    } else if (e.key === 'Escape') {
-      setOpen(false);
     }
   }
 
+  const searchInput = (inputRef?: React.RefObject<HTMLInputElement | null>) => (
+    <div ref={containerRef} className="relative w-full">
+      <form onSubmit={handleSubmit}>
+        <input
+          ref={inputRef}
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => suggestions.length > 0 && setOpen(true)}
+          onKeyDown={handleKeyDown}
+          placeholder="Cerca corsi, manuali, video, quiz, FAQ…"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+        />
+      </form>
+      {open && suggestions.length > 0 && (
+        <div className="card absolute left-0 right-0 top-full z-20 mt-1 max-h-96 overflow-y-auto py-1">
+          {suggestions.map((s, i) => (
+            <Link
+              key={`${s.type}-${s.title}-${i}`}
+              href={s.url}
+              onClick={() => {
+                setOpen(false);
+                setMobileSearchOpen(false);
+              }}
+              className={`flex items-center gap-2 px-3 py-2 text-sm ${
+                i === activeIndex ? 'bg-accent-50 dark:bg-accent-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+              }`}
+            >
+              <span aria-hidden>{SEARCH_TYPE_META[s.type].icon}</span>
+              <span className="flex-1 truncate text-slate-700 dark:text-slate-200">{s.title}</span>
+              <span className="shrink-0 text-xs text-slate-400">{SEARCH_TYPE_META[s.type].label}</span>
+            </Link>
+          ))}
+          <button
+            type="button"
+            onClick={goToResults}
+            className="mt-1 w-full border-t border-slate-100 px-3 py-2 text-left text-sm text-accent-600 hover:bg-slate-50 dark:border-slate-800 dark:text-accent-400 dark:hover:bg-slate-800"
+          >
+            Vedi tutti i risultati per &ldquo;{query}&rdquo;
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  if (mobileSearchOpen) {
+    return (
+      <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 md:hidden">
+        <button
+          type="button"
+          aria-label="Chiudi ricerca"
+          onClick={() => setMobileSearchOpen(false)}
+          className="shrink-0 rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          ←
+        </button>
+        {searchInput(mobileInputRef)}
+      </header>
+    );
+  }
+
   return (
-    <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+    <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 md:gap-4">
       <MobileNav />
       <Link href="/" className="flex shrink-0 items-center gap-2">
         <span className="flex items-center rounded-md bg-white px-1.5 py-1 shadow-sm ring-1 ring-slate-200">
           <Image src="/logo-atm-mark.png" alt="ATM" width={84} height={22} priority />
         </span>
-        <span className="text-lg font-semibold text-accent-600 dark:text-accent-400">Formazione ADL</span>
+        <span className="hidden text-lg font-semibold text-accent-600 dark:text-accent-400 sm:inline">
+          Formazione ADL
+        </span>
       </Link>
-      <div ref={containerRef} className="relative flex-1 max-w-xl">
-        <form onSubmit={handleSubmit}>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => suggestions.length > 0 && setOpen(true)}
-            onKeyDown={handleKeyDown}
-            placeholder="Cerca corsi, manuali, video, quiz, FAQ…"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-          />
-        </form>
-        {open && suggestions.length > 0 && (
-          <div className="card absolute left-0 right-0 top-full z-20 mt-1 max-h-96 overflow-y-auto py-1">
-            {suggestions.map((s, i) => (
-              <Link
-                key={`${s.type}-${s.title}-${i}`}
-                href={s.url}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-2 px-3 py-2 text-sm ${
-                  i === activeIndex ? 'bg-accent-50 dark:bg-accent-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                <span aria-hidden>{SEARCH_TYPE_META[s.type].icon}</span>
-                <span className="flex-1 truncate text-slate-700 dark:text-slate-200">{s.title}</span>
-                <span className="shrink-0 text-xs text-slate-400">{SEARCH_TYPE_META[s.type].label}</span>
-              </Link>
-            ))}
-            <button
-              type="button"
-              onClick={goToResults}
-              className="mt-1 w-full border-t border-slate-100 px-3 py-2 text-left text-sm text-accent-600 hover:bg-slate-50 dark:border-slate-800 dark:text-accent-400 dark:hover:bg-slate-800"
-            >
-              Vedi tutti i risultati per &ldquo;{query}&rdquo;
-            </button>
-          </div>
-        )}
-      </div>
+      <div className="hidden flex-1 max-w-xl md:block">{searchInput()}</div>
+      <button
+        type="button"
+        aria-label="Cerca"
+        onClick={() => setMobileSearchOpen(true)}
+        className="ml-auto shrink-0 rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 md:hidden"
+      >
+        🔍
+      </button>
       <button
         type="button"
         aria-label="Notifiche"
-        className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        className="hidden shrink-0 rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 sm:block"
       >
         🔔
       </button>
-      <ThemeToggle />
+      <div className="hidden sm:block">
+        <ThemeToggle />
+      </div>
       <Link
         href="/profile"
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-500 text-sm font-semibold text-white"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-500 text-sm font-semibold text-white"
         aria-label="Profilo utente"
       >
         MR
