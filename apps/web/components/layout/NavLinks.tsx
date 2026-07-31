@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 export const NAV_ITEMS = [
   { href: '/', label: 'Home', icon: '🏠' },
@@ -22,6 +23,7 @@ export const NAV_ITEMS = [
 
 export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { role } = useAuth();
 
   return (
     <nav className="flex flex-col gap-1">
@@ -43,19 +45,23 @@ export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           </Link>
         );
       })}
-      <div className="my-3 border-t border-slate-200 dark:border-slate-800" />
-      <Link
-        href="/admin"
-        onClick={onNavigate}
-        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
-          pathname.startsWith('/admin')
-            ? 'bg-accent-50 text-accent-700 dark:bg-accent-500/10 dark:text-accent-400'
-            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-        }`}
-      >
-        <span aria-hidden>🛠️</span>
-        Dashboard amministratore
-      </Link>
+      {role === 'ADMIN' && (
+        <>
+          <div className="my-3 border-t border-slate-200 dark:border-slate-800" />
+          <Link
+            href="/admin"
+            onClick={onNavigate}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+              pathname.startsWith('/admin')
+                ? 'bg-accent-50 text-accent-700 dark:bg-accent-500/10 dark:text-accent-400'
+                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <span aria-hidden>🛠️</span>
+            Dashboard amministratore
+          </Link>
+        </>
+      )}
     </nav>
   );
 }

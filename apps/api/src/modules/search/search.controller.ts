@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Query } from '@nestjs/common';
 import { SearchService, SearchResultType } from './search.service';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller()
 export class SearchController {
@@ -15,6 +16,7 @@ export class SearchController {
     return this.service.suggest(q);
   }
 
+  @Roles('ADMIN')
   @Post('admin/search/reindex')
   reindex() {
     return this.service.reindexManuals();

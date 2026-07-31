@@ -71,6 +71,9 @@ enum EnrollmentStatus {
 model User {
   id            String         @id @default(uuid())
   email         String         @unique
+  /// UID Firebase Authentication collegato a questo utente. Null finché l'utente (es. seedato per demo)
+  /// non ha ancora effettuato il primo accesso reale — a quel punto viene collegato per email (vedi auth.service.ts).
+  firebaseUid   String?        @unique
   fullName      String
   avatarUrl     String?
   role          Role           @default(STUDENT)

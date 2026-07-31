@@ -9,6 +9,74 @@ import type { SuggestItem } from '@/lib/types';
 import { SEARCH_TYPE_META } from '@/lib/search-types';
 import { ThemeToggle } from './ThemeToggle';
 import { MobileNav } from './MobileNav';
+import { useAuth } from '@/components/auth/AuthProvider';
+
+function initialsFor(name: string | null | undefined, email: string | null | undefined): string {
+  const source = (name?.trim() || email || '?').trim();
+  if (name?.trim()) {
+    const parts = name.trim().split(/\s+/);
+    return parts.length > 1 ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase() : source.slice(0, 2).toUpperCase();
+  }
+  return source.slice(0, 2).toUpperCase();
+}
+
+function UserMenu() {
+  const { user, logOut } = useAuth();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  async function handleLogOut() {
+    setOpen(false);
+    await logOut();
+    router.push('/login');
+  }
+
+  return (
+    <div ref={menuRef} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-500 text-sm font-semibold text-white"
+        aria-label="Profilo utente"
+      >
+        {initialsFor(user?.displayName, user?.email)}
+      </button>
+      {open && (
+        <div className="card absolute right-0 top-full z-20 mt-1 w-56 py-1">
+          <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+            <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+              {user?.displayName || 'Utente'}
+            </p>
+            <p className="truncate text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
+          </div>
+          <Link
+            href="/profile"
+            onClick={() => setOpen(false)}
+            className="block px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+          >
+            Profilo
+          </Link>
+          <button
+            type="button"
+            onClick={handleLogOut}
+            className="block w-full px-3 py-2 text-left text-sm text-rose-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            Esci
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Topbar() {
   const router = useRouter();
@@ -179,13 +247,7 @@ export function Topbar() {
       <div className="hidden sm:block">
         <ThemeToggle />
       </div>
-      <Link
-        href="/profile"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-500 text-sm font-semibold text-white"
-        aria-label="Profilo utente"
-      >
-        MR
-      </Link>
+      <UserMenu />
     </header>
   );
 }

@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AiChatService } from './ai-chat.service';
+import { Roles } from '../../auth/roles.decorator';
 
 @Controller()
 export class AiChatController {
@@ -23,6 +24,7 @@ export class AiChatController {
     return this.service.getConversation(id);
   }
 
+  @Roles('ADMIN')
   @Get('admin/ai/unresolved-questions')
   unresolved() {
     return this.service.mostUnresolved();

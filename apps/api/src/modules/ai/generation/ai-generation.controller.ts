@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { AiGenerationService } from './ai-generation.service';
 import { AiUsageService } from '../ai-usage.service';
+import { Roles } from '../../auth/roles.decorator';
 
+@Roles('ADMIN')
 @Controller('admin/ai')
 export class AiGenerationController {
   constructor(

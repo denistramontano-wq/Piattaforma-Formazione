@@ -1,28 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { ForbiddenException, Inject, Injectable, Scope, UnauthorizedException } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import type { Request } from 'express';
+import type { User } from '@prisma/client';
 
 /**
- * L'autenticazione reale (JWT/OAuth2/SSO) è fuori dallo scope di questo scaffold
- * (capitolo 09 - Fondamenta). Finché non è collegata, tutte le rotte "personali"
- * operano sull'utente demo seedato dal database.
+ * Restituisce l'utente autenticato per la richiesta corrente. L'utente viene risolto
+ * e verificato da AuthGuard (vedi modules/auth/auth.guard.ts) e allegato a
+ * request.user prima che qualunque controller/service venga eseguito — qui lo si
+ * legge soltanto. Provider a scope REQUEST perché, a differenza di un singleton,
+ * deve "vedere" una richiesta HTTP diversa (quindi un utente diverso) ad ogni chiamata.
  */
-export const DEMO_USER_EMAIL = 'maria.rossi@demo.piattaforma-formazione.it';
-export const DEMO_ADMIN_EMAIL = 'admin@demo.piattaforma-formazione.it';
-
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class CurrentUserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(REQUEST) private readonly request: Request & { user?: User }) {}
 
-  getCurrentUser() {
-    return this.prisma.user.findUniqueOrThrow({ where: { email: DEMO_USER_EMAIL } });
+  async getCurrentUser(): Promise<User> {
+    if (!this.request.user) {
+      throw new UnauthorizedException('Nessun utente autenticato per questa richiesta.');
+    }
+    return this.request.user;
   }
 
-  /**
-   * Le rotte /admin/* agiscono come l'utente demo con ruolo ADMIN. Un vero controllo
-   * RBAC (verifica ruolo + permessi sulla richiesta autenticata) è pianificato insieme
-   * all'autenticazione reale — vedi docs/09-architettura-tecnica.md.
-   */
-  getCurrentAdminUser() {
-    return this.prisma.user.findUniqueOrThrow({ where: { email: DEMO_ADMIN_EMAIL } });
+  /** Come getCurrentUser(), ma verifica esplicitamente il ruolo ADMIN (le rotte /admin/* sono comunque già protette da RolesGuard). */
+  async getCurrentAdminUser(): Promise<User> {
+    const user = await this.getCurrentUser();
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Richiesto ruolo amministratore.');
+    }
+    return user;
   }
 }

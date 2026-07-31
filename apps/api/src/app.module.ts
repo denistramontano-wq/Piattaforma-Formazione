@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { CommonModule } from './common/common.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { DocumentsModule } from './modules/documents/documents.module';
@@ -29,6 +30,7 @@ import { GamificationModule } from './modules/gamification/gamification.module';
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     PrismaModule,
+    AuthModule,
     CommonModule,
     CategoriesModule,
     CoursesModule,
