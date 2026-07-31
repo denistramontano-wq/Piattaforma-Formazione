@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import type { SuggestItem } from '@/lib/types';
 import { SEARCH_TYPE_META } from '@/lib/search-types';
 import { ThemeToggle } from './ThemeToggle';
+import { MobileNav } from './MobileNav';
 
 export function Topbar() {
   const router = useRouter();
@@ -78,6 +79,7 @@ export function Topbar() {
 
   return (
     <header className="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+      <MobileNav />
       <Link href="/" className="flex shrink-0 items-center gap-2">
         <span className="flex items-center rounded-md bg-white px-1.5 py-1 shadow-sm ring-1 ring-slate-200">
           <Image src="/logo-atm-mark.png" alt="ATM" width={84} height={22} priority />
