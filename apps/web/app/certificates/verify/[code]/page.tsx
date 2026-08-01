@@ -1,5 +1,5 @@
+import Image from 'next/image';
 import { api } from '@/lib/api';
-import { Breadcrumb } from '@/components/layout/Breadcrumb';
 
 interface VerifyResult {
   valid: boolean;
@@ -18,9 +18,13 @@ export default async function VerifyCertificatePage({ params }: { params: Promis
   }
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-6">
-      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Verifica certificato' }]} />
-      <div className="card p-8 text-center">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
+      <div className="card w-full max-w-md p-8 text-center">
+        <div className="mb-6 flex flex-col items-center gap-3">
+          <Image src="/logo-atm-mark.png" alt="ATM" width={100} height={26} priority />
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Formazione ADL</h1>
+        </div>
+
         {result ? (
           <>
             <p className="text-3xl">✅</p>
@@ -37,7 +41,7 @@ export default async function VerifyCertificatePage({ params }: { params: Promis
             <p className="text-3xl">⚠️</p>
             <p className="mt-2 text-lg font-semibold text-slate-800 dark:text-slate-100">Certificato non valido</p>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Il codice "{code}" non corrisponde a nessun certificato emesso.
+              Il codice &ldquo;{code}&rdquo; non corrisponde a nessun certificato emesso.
             </p>
           </>
         )}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SESSION_COOKIE_NAME } from '@/lib/session-cookie';
 
-const PUBLIC_PATHS = ['/login'];
+const PUBLIC_PATHS = ['/login', '/certificates/verify'];
 
 /**
  * Controllo "ottimistico": verifica solo che il cookie esista, non lo convalida (la

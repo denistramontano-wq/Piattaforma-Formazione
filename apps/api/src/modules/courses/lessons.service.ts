@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CurrentUserService } from '../../common/current-user.service';
 import { XpEngineService } from '../gamification/xp-engine.service';
 import { BadgeEngineService } from '../gamification/badge-engine.service';
+import { CertificatesService } from '../certificates/certificates.service';
 
 @Injectable()
 export class LessonsService {
@@ -11,6 +12,7 @@ export class LessonsService {
     private readonly currentUser: CurrentUserService,
     private readonly xpEngine: XpEngineService,
     private readonly badgeEngine: BadgeEngineService,
+    private readonly certificates: CertificatesService,
   ) {}
 
   async findOne(id: string) {
@@ -85,6 +87,7 @@ export class LessonsService {
         refType: 'Course',
         refId: lesson.module.courseId,
       });
+      await this.certificates.issueForCourseCompletion(user.id, lesson.module.courseId);
     }
     await this.badgeEngine.evaluate(user.id);
 
