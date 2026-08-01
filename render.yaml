@@ -1,0 +1,69 @@
+# Blueprint Render: https://render.com/docs/blueprint-spec
+# Come si usa: vedi DEPLOY.md nella root del repository.
+#
+# Nota sugli URL: formazione-adl-api.onrender.com / formazione-adl-web.onrender.com sono gli URL
+# che Render assegna di default in base al "name" qui sotto. Se risultano già occupati da un altro
+# account Render, questo file sceglierà comunque un nome (con suffisso casuale) — in tal caso vanno
+# aggiornati a mano CORS_ORIGIN, API_PUBLIC_URL e NEXT_PUBLIC_API_URL nella dashboard Render con gli
+# URL reali assegnati, e poi va rifatto il deploy di entrambi i servizi.
+
+databases:
+  - name: formazione-adl-db
+    databaseName: formazione
+    user: formazione
+
+services:
+  - type: web
+    name: formazione-adl-api
+    runtime: docker
+    dockerfilePath: apps/api/Dockerfile
+    dockerContext: apps/api
+    healthCheckPath: /api/v1/health
+    # Un disco persistente richiede un piano a pagamento (non disponibile sul piano gratuito) —
+    # ci sono salvati i video/manuali caricati dagli admin e i PDF dei certificati generati: senza,
+    # verrebbero persi ad ogni deploy.
+    disk:
+      name: uploads
+      mountPath: /app/uploads
+      sizeGB: 5
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: formazione-adl-db
+          property: connectionString
+      - key: PORT
+        value: "3001"
+      - key: CORS_ORIGIN
+        value: https://formazione-adl-web.onrender.com
+      - key: API_PUBLIC_URL
+        value: https://formazione-adl-api.onrender.com
+      # Da impostare a mano nella dashboard Render dopo il primo deploy (vedi DEPLOY.md):
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      # Opzionale: senza, il modulo IA usa il provider locale (nessun costo, nessuna chiamata esterna).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+  - type: web
+    name: formazione-adl-web
+    runtime: docker
+    dockerfilePath: apps/web/Dockerfile
+    dockerContext: apps/web
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://formazione-adl-api.onrender.com/api/v1
+      # Da impostare a mano nella dashboard Render dopo il primo deploy (vedi DEPLOY.md).
+      # Sono valori pubblici (non segreti: la chiave web Firebase è pensata per stare nel
+      # browser), ma "sync: false" evita di doverli scrivere in chiaro in questo file.
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        sync: false
