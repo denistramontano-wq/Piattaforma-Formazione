@@ -1,80 +1,85 @@
-# Pubblicare Formazione ADL online (Render)
+# Come mettere online Formazione ADL — guida passo passo
 
-Questa guida presume che tu abbia già configurato Firebase come descritto in precedenza
-(progetto reale, Authentication con Email/Password attivo, chiave web e credenziali del
-service account). Non serve Docker installato sul tuo computer: Render costruisce le
-immagini lui stesso a partire dai `Dockerfile` nel repository.
+Questa guida presume che tu abbia già la cartella del progetto sul Mac con dentro
+`apps/api/.env` e `apps/web/.env.local` compilati con i dati Firebase (li abbiamo già
+configurati insieme). Non devi installare nulla di nuovo: si fa tutto dal sito di Render.
 
-## 1. Crea il Blueprint su Render
+---
 
-1. Vai su [render.com](https://render.com), crea un account (puoi accedere con GitHub) se non ce l'hai già.
-2. Dashboard → **New** → **Blueprint**.
-3. Collega il repository GitHub `denistramontano-wq/piattaforma-formazione` e scegli il branch da pubblicare.
-4. Render legge `render.yaml` dalla root del repo e ti mostra un'anteprima con 3 risorse:
-   - `formazione-adl-db` (database Postgres)
-   - `formazione-adl-api` (backend)
-   - `formazione-adl-web` (sito)
-5. Conferma con **Apply**. Il primo deploy parte subito ma **fallirà** per l'API — è normale,
-   mancano ancora le variabili Firebase (punto 2).
+## Passo 1 — Crea un account Render
 
-## 2. Imposta le variabili d'ambiente
+Vai su [render.com](https://render.com) e crea un account gratuito (puoi usare "Accedi con GitHub" per fare prima).
 
-**Servizio `formazione-adl-api`** → scheda **Environment** → aggiungi:
+## Passo 2 — Collega il progetto
 
-| Chiave | Valore |
-|---|---|
-| `FIREBASE_PROJECT_ID` | `formazione-adl` |
-| `FIREBASE_CLIENT_EMAIL` | quella del tuo file service account (es. `firebase-adminsdk-...@formazione-adl.iam.gserviceaccount.com`) |
-| `FIREBASE_PRIVATE_KEY` | la chiave privata del service account, incluse le `\n` |
-| `ADMIN_EMAILS` | la tua email (o più email separate da virgola) |
-| `ANTHROPIC_API_KEY` | opzionale — senza, l'IA usa un motore locale gratuito |
+1. Nella dashboard di Render, clicca il pulsante **New** in alto, poi scegli **Blueprint**.
+2. Ti verrà chiesto di collegare un repository GitHub: cerca e seleziona `piattaforma-formazione`.
+3. Render trova da solo il file `render.yaml` che ho preparato nel progetto e ti mostra un'anteprima con 3 elementi che sta per creare:
+   - un database (dove vengono salvati i dati)
+   - il "motore" della piattaforma (l'API)
+   - il sito vero e proprio
+4. Clicca **Apply** (o **Deploy Blueprint**) per confermare.
+5. A questo punto Render comincia a costruire tutto. **È normale che l'API dia errore al primo tentativo** — mancano ancora le chiavi Firebase, che aggiungi al passo successivo.
 
-**Servizio `formazione-adl-web`** → scheda **Environment** → aggiungi:
+## Passo 3 — Inserisci le chiavi Firebase nel motore (API)
 
-| Chiave | Valore |
-|---|---|
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | dalla configurazione web di Firebase |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | `formazione-adl.firebaseapp.com` |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | `formazione-adl` |
+1. Nella dashboard Render, apri il servizio chiamato **formazione-adl-api**.
+2. Nel menu a sinistra clicca **Environment**.
+3. Clicca **Add Environment Variable** e aggiungi, una alla volta, queste 4 righe (a sinistra il nome, a destra il valore):
 
-Dopo aver salvato, avvia manualmente un **Manual Deploy → Deploy latest commit** su entrambi
-i servizi (le variabili `NEXT_PUBLIC_*` vengono incorporate nel sito solo durante la build, un
-semplice riavvio non basta).
+   - `FIREBASE_PROJECT_ID` → `formazione-adl`
+   - `FIREBASE_CLIENT_EMAIL` → `firebase-adminsdk-fbsvc@formazione-adl.iam.gserviceaccount.com`
+   - `FIREBASE_PRIVATE_KEY` → apri sul Mac il file `apps/api/.env`, copia tutto il valore scritto dopo `FIREBASE_PRIVATE_KEY=` (comprese le virgolette) e incollalo qui
+   - `ADMIN_EMAILS` → `denis.tramontano@gmail.com`
 
-## 3. Controlla gli URL assegnati
+4. Clicca **Save Changes**.
 
-`render.yaml` presume che Render assegni `https://formazione-adl-api.onrender.com` e
-`https://formazione-adl-web.onrender.com` (in base ai nomi dei servizi). Se quei nomi erano
-già occupati, Render ne avrà scelti altri — controlla gli URL reali in cima a ciascuna pagina
-servizio. Se sono diversi da quelli previsti, aggiorna a mano in **Environment**:
+## Passo 4 — Inserisci le chiavi Firebase nel sito (Web)
 
-- su `formazione-adl-api`: `CORS_ORIGIN` e `API_PUBLIC_URL` con l'URL reale del sito/api
-- su `formazione-adl-web`: `NEXT_PUBLIC_API_URL` con `<url reale dell'api>/api/v1`
+1. Torna alla dashboard e apri il servizio **formazione-adl-web**.
+2. Menu a sinistra → **Environment**.
+3. Aggiungi queste 3 righe:
 
-e rifai il deploy di entrambi.
+   - `NEXT_PUBLIC_FIREBASE_API_KEY` → `AIzaSyBAiuwPTZjKpZbU5k7P6WGjK875BwfSXsg`
+   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` → `formazione-adl.firebaseapp.com`
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID` → `formazione-adl`
 
-## 4. Autorizza il dominio su Firebase
+4. Clicca **Save Changes**.
 
-Passaggio facile da dimenticare ma **obbligatorio**: Firebase Authentication accetta login
-solo dai domini nella sua lista autorizzata.
+## Passo 5 — Riavvia entrambi i servizi
 
-Console Firebase → **Authentication** → **Settings** → **Authorized domains** → **Add domain**
-→ inserisci il dominio reale di `formazione-adl-web` (es. `formazione-adl-web.onrender.com`).
-Senza questo passaggio il login sul sito pubblicato darà errore.
+Per ognuno dei due servizi (`formazione-adl-api` e `formazione-adl-web`):
 
-## 5. Verifica finale
+1. Apri il servizio.
+2. In alto a destra, clicca **Manual Deploy** → **Deploy latest commit**.
+3. Aspetta che il pallino diventi verde e scritto "Live" (qualche minuto).
 
-Apri l'URL di `formazione-adl-web`: dovresti vedere la pagina di login. Registrati con
-l'email che hai messo in `ADMIN_EMAILS` per entrare come amministratore.
+## Passo 6 — Controlla gli indirizzi internet assegnati
 
-## Note
+1. Apri il servizio **formazione-adl-api**: in cima alla pagina c'è scritto un indirizzo tipo `https://formazione-adl-api.onrender.com`. Copialo.
+2. Apri il servizio **formazione-adl-web**: copia allo stesso modo il suo indirizzo, tipo `https://formazione-adl-web.onrender.com`.
+3. **Se sono uguali a questi esempi**, non devi fare altro, salta al Passo 7.
+4. **Se invece Render ha assegnato indirizzi diversi** (può succedere se quei nomi erano già usati da qualcun altro), torna su **Environment** e aggiorna:
+   - su `formazione-adl-api`: le variabili `CORS_ORIGIN` e `API_PUBLIC_URL` con l'indirizzo vero
+   - su `formazione-adl-web`: la variabile `NEXT_PUBLIC_API_URL` con l'indirizzo vero dell'API seguito da `/api/v1` (es. `https://xxxxx.onrender.com/api/v1`)
+   - poi ripeti il Passo 5 (riavvia entrambi)
 
-- **I dati demo non vengono caricati automaticamente in produzione** (lo script di seed è
-  pensato solo per lo sviluppo locale) — il sito parte vuoto, pronto per i contenuti reali.
-- **Redis non serve**: non è usato da nessuna parte del codice, il file `render.yaml`
-  non lo include.
-- **Deploy automatico**: da qui in avanti, ogni `git push` sul branch collegato aggiorna
-  automaticamente sia il sito che l'API.
-- **Costi**: il disco persistente per i file caricati richiede un piano Render a pagamento per
-  `formazione-adl-api` (il piano gratuito non supporta dischi persistenti). Controlla i piani
-  disponibili nella dashboard Render prima di confermare il Blueprint.
+## Passo 7 — Un ultimo passaggio importante su Firebase (da non saltare!)
+
+Senza questo passaggio il login sul sito pubblicato **non funzionerà**.
+
+1. Vai sulla Console Firebase del progetto `formazione-adl`.
+2. Menu a sinistra → **Authentication** → in alto scheda **Settings** → **Authorized domains**.
+3. Clicca **Add domain** e incolla l'indirizzo del tuo sito (quello copiato al Passo 6, senza `https://` davanti — solo tipo `formazione-adl-web.onrender.com`).
+
+## Passo 8 — Prova!
+
+Apri nel browser l'indirizzo del tuo sito (`formazione-adl-web...`). Dovresti vedere la pagina di login. Registrati con `denis.tramontano@gmail.com` per entrare come amministratore.
+
+---
+
+## Da sapere
+
+- **La piattaforma parte vuota**: i corsi/manuali di esempio che vedi in locale non vengono copiati online — è pensata per partire pulita e caricarci i contenuti veri.
+- **Da qui in poi è automatico**: ogni volta che io (o tu) modifichiamo il codice e lo pubblichiamo su GitHub, Render aggiorna da solo il sito online in pochi minuti, senza bisogno di rifare questi passaggi.
+- **Costi**: per salvare in modo permanente i file caricati (video, manuali, certificati) serve un piano Render a pagamento per il servizio `formazione-adl-api` — il piano gratuito cancella i file ad ogni riavvio. Render ti mostra i prezzi durante il Passo 2, prima di confermare.
