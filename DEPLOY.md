@@ -82,4 +82,4 @@ Apri nel browser l'indirizzo del tuo sito (`formazione-adl-web...`). Dovresti ve
 
 - **La piattaforma parte vuota**: i corsi/manuali di esempio che vedi in locale non vengono copiati online — è pensata per partire pulita e caricarci i contenuti veri.
 - **Da qui in poi è automatico**: ogni volta che io (o tu) modifichiamo il codice e lo pubblichiamo su GitHub, Render aggiorna da solo il sito online in pochi minuti, senza bisogno di rifare questi passaggi.
-- **Costi**: per salvare in modo permanente i file caricati (video, manuali, certificati) serve un piano Render a pagamento per il servizio `formazione-adl-api` — il piano gratuito cancella i file ad ogni riavvio. Render ti mostra i prezzi durante il Passo 2, prima di confermare.
+- **Costi**: il file `render.yaml` chiede a Render un piano a pagamento sia per il database sia per i due servizi (necessario per salvare in modo permanente i file caricati — il piano gratuito li cancellerebbe ad ogni riavvio). Render ti mostra i prezzi esatti al Passo 2, prima di confermare: puoi comunque cambiare piano in qualunque momento dalla dashboard, anche dopo aver creato tutto.

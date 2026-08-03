@@ -11,11 +11,15 @@ databases:
   - name: formazione-adl-db
     databaseName: formazione
     user: formazione
+    plan: basic-256mb
+    region: frankfurt
 
 services:
   - type: web
     name: formazione-adl-api
     runtime: docker
+    region: frankfurt
+    plan: starter
     dockerfilePath: apps/api/Dockerfile
     dockerContext: apps/api
     healthCheckPath: /api/v1/health
@@ -53,6 +57,8 @@ services:
   - type: web
     name: formazione-adl-web
     runtime: docker
+    region: frankfurt
+    plan: starter
     dockerfilePath: apps/web/Dockerfile
     dockerContext: apps/web
     envVars:
