@@ -42,15 +42,13 @@ export class CertificatesService {
     const verifyBaseUrl = (process.env.CORS_ORIGIN ?? 'http://localhost:3000').replace(/\/$/, '');
     const verifyUrl = `${verifyBaseUrl}/certificates/verify/${verifyCode}`;
 
-    const filename = await this.pdf.generateAndStore({
+    const pdfUrl = await this.pdf.generateAndStore({
       userFullName: user.fullName,
       courseTitle: course.title,
       issuedAt,
       verifyCode,
       verifyUrl,
     });
-    const publicOrigin = process.env.API_PUBLIC_URL ?? 'http://localhost:3001';
-    const pdfUrl = `${publicOrigin}/uploads/certificates/${filename}`;
 
     return this.prisma.certificate.create({
       data: { userId, courseId, verifyCode, pdfUrl, issuedAt },

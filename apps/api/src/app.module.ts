@@ -24,12 +24,14 @@ import { AdminQuizzesModule } from './modules/admin-quizzes/admin-quizzes.module
 import { SearchModule } from './modules/search/search.module';
 import { AiModule } from './modules/ai/ai.module';
 import { GamificationModule } from './modules/gamification/gamification.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     PrismaModule,
+    StorageModule,
     AuthModule,
     CommonModule,
     CategoriesModule,

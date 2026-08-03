@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { mkdirSync, existsSync, createWriteStream } from 'fs';
+import { Inject, Injectable } from '@nestjs/common';
+import { existsSync } from 'fs';
 import { join } from 'path';
 import { v4 as uuid } from 'uuid';
 import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
-import { UPLOADS_DIR } from '../uploads/uploads.module';
+import type { StorageProvider } from '../storage/storage.provider';
+import { STORAGE_PROVIDER } from '../storage/storage.tokens';
 
-const CERTIFICATES_DIR = join(UPLOADS_DIR, 'certificates');
 const LOGO_PATH = join(process.cwd(), 'assets', 'logo-atm-mark.png');
 const ACCENT_COLOR = '#3366ff';
 const INK_COLOR = '#1e293b';
@@ -22,27 +22,25 @@ export interface CertificatePdfInput {
 
 @Injectable()
 export class CertificatePdfService {
-  /** Genera il PDF del certificato e lo salva in uploads/certificates, restituendo il nome del file. */
+  constructor(@Inject(STORAGE_PROVIDER) private readonly storage: StorageProvider) {}
+
+  /** Genera il PDF del certificato e lo carica sul provider di storage attivo, restituendo l'URL pubblico. */
   async generateAndStore(input: CertificatePdfInput): Promise<string> {
-    if (!existsSync(CERTIFICATES_DIR)) {
-      mkdirSync(CERTIFICATES_DIR, { recursive: true });
-    }
-    const filename = `${uuid()}.pdf`;
-    const filePath = join(CERTIFICATES_DIR, filename);
+    const filename = `certificates/${uuid()}.pdf`;
     const qrDataUrl = await QRCode.toDataURL(input.verifyUrl, { margin: 1, width: 200 });
 
-    await new Promise<void>((resolve, reject) => {
+    const buffer = await new Promise<Buffer>((resolve, reject) => {
       const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 0 });
-      const stream = doc.pipe(createWriteStream(filePath));
-      stream.on('finish', resolve);
-      stream.on('error', reject);
+      const chunks: Buffer[] = [];
+      doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
       this.draw(doc, input, qrDataUrl);
       doc.end();
     });
 
-    return filename;
+    return this.storage.upload({ buffer, filename, mimeType: 'application/pdf' });
   }
 
   private draw(doc: PDFKit.PDFDocument, input: CertificatePdfInput, qrDataUrl: string): void {

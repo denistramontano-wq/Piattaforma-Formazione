@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { UPLOADS_DIR } from './modules/uploads/uploads.module';
+import { UPLOADS_DIR } from './modules/storage/local-disk-storage.provider';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

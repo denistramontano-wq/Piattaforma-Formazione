@@ -1,85 +1,127 @@
-# Come mettere online Formazione ADL — guida passo passo
+# Come mettere online Formazione ADL a costo zero — guida passo passo
+
+Questa versione usa **Supabase** (gratuito, permanente) per il database e per i file caricati
+(manuali, certificati), e **Render** (gratuito) solo per far girare il sito e l'API. Risultato:
+**0€/mese**, nessun dato che scade o viene cancellato.
 
 Questa guida presume che tu abbia già la cartella del progetto sul Mac con dentro
 `apps/api/.env` e `apps/web/.env.local` compilati con i dati Firebase (li abbiamo già
-configurati insieme). Non devi installare nulla di nuovo: si fa tutto dal sito di Render.
+configurati insieme). Non devi installare nulla di nuovo: si fa tutto dai siti di Supabase e Render.
 
 ---
 
-## Passo 1 — Crea un account Render
+## Parte A — Crea il database e lo spazio file su Supabase
 
-Vai su [render.com](https://render.com) e crea un account gratuito (puoi usare "Accedi con GitHub" per fare prima).
+### Passo 1 — Crea un account e un progetto
 
-## Passo 2 — Collega il progetto
+1. Vai su [supabase.com](https://supabase.com) e crea un account gratuito (puoi usare "Continue with GitHub").
+2. Clicca **New Project**.
+3. Dai un nome, ad esempio `formazione-adl`.
+4. Ti chiede una **Database Password**: scegline una e **salvala da qualche parte** (ti servirà subito dopo).
+5. Come regione scegli una in Europa (es. "Central EU (Frankfurt)").
+6. Clicca **Create new project** e aspetta 1-2 minuti che si prepari.
 
-1. Nella dashboard di Render, clicca il pulsante **New** in alto, poi scegli **Blueprint**.
-2. Ti verrà chiesto di collegare un repository GitHub: cerca e seleziona `piattaforma-formazione`.
-3. Render trova da solo il file `render.yaml` che ho preparato nel progetto e ti mostra un'anteprima con 3 elementi che sta per creare:
-   - un database (dove vengono salvati i dati)
-   - il "motore" della piattaforma (l'API)
-   - il sito vero e proprio
-4. Clicca **Apply** (o **Deploy Blueprint**) per confermare.
-5. A questo punto Render comincia a costruire tutto. **È normale che l'API dia errore al primo tentativo** — mancano ancora le chiavi Firebase, che aggiungi al passo successivo.
+### Passo 2 — Copia l'indirizzo del database
 
-## Passo 3 — Inserisci le chiavi Firebase nel motore (API)
+1. Nel progetto appena creato, menu a sinistra → icona ingranaggio **Project Settings** → **Database**.
+2. Cerca la sezione **Connection string**, scheda **URI**. Vedrai qualcosa tipo:
+   `postgresql://postgres:[YOUR-PASSWORD]@db.xxxxxxxxxxxx.supabase.co:5432/postgres`
+3. Copialo e sostituisci la parte `[YOUR-PASSWORD]` con la password scelta al Passo 1.
+4. Tienilo da parte (ti serve al Passo 6).
 
-1. Nella dashboard Render, apri il servizio chiamato **formazione-adl-api**.
-2. Nel menu a sinistra clicca **Environment**.
-3. Clicca **Add Environment Variable** e aggiungi, una alla volta, queste 4 righe (a sinistra il nome, a destra il valore):
+### Passo 3 — Copia le chiavi del progetto
 
+1. Sempre in **Project Settings** → **API**.
+2. Copia il valore **Project URL** (tipo `https://xxxxxxxxxxxx.supabase.co`).
+3. Copia il valore segreto **service_role** (sotto "Project API keys" — clicca l'occhio per rivelarlo). È una chiave potente: non va mai messa nel sito, solo nell'API (vedi Passo 6).
+
+### Passo 4 — Crea lo spazio per i file
+
+1. Menu a sinistra → **Storage**.
+2. Clicca **New bucket**.
+3. Nome: `uploads` (esattamente così).
+4. Attiva l'interruttore **Public bucket** (altrimenti i manuali/certificati non si potrebbero scaricare).
+5. Clicca **Create bucket**.
+
+---
+
+## Parte B — Pubblica il sito su Render
+
+### Passo 5 — Crea un account Render
+
+Vai su [render.com](https://render.com) e crea un account gratuito (puoi usare "Accedi con GitHub").
+
+### Passo 6 — Collega il progetto
+
+1. Nella dashboard di Render, clicca **New** in alto, poi **Blueprint**.
+2. Cerca e seleziona il repository `piattaforma-formazione`, poi clicca **Connect**.
+3. Render trova da solo il file `render.yaml` e ti mostra un'anteprima con 2 servizi (l'API e il sito) — **entrambi gratuiti**, non ti chiederà la carta di credito.
+4. Clicca **Apply** (o **Deploy Blueprint**).
+5. È normale che l'API dia errore al primo tentativo — mancano ancora le chiavi, che aggiungi adesso.
+
+### Passo 7 — Inserisci le chiavi nel motore (API)
+
+1. Apri il servizio **formazione-adl-api** → menu a sinistra **Environment**.
+2. Aggiungi queste righe (a sinistra il nome, a destra il valore):
+
+   - `DATABASE_URL` → l'indirizzo copiato al Passo 2
+   - `SUPABASE_URL` → il valore copiato al Passo 3
+   - `SUPABASE_SERVICE_ROLE_KEY` → la chiave segreta copiata al Passo 3
    - `FIREBASE_PROJECT_ID` → `formazione-adl`
    - `FIREBASE_CLIENT_EMAIL` → `firebase-adminsdk-fbsvc@formazione-adl.iam.gserviceaccount.com`
    - `FIREBASE_PRIVATE_KEY` → apri sul Mac il file `apps/api/.env`, copia tutto il valore scritto dopo `FIREBASE_PRIVATE_KEY=` (comprese le virgolette) e incollalo qui
    - `ADMIN_EMAILS` → `denis.tramontano@gmail.com`
 
-4. Clicca **Save Changes**.
+3. Clicca **Save Changes**.
 
-## Passo 4 — Inserisci le chiavi Firebase nel sito (Web)
+### Passo 8 — Inserisci le chiavi Firebase nel sito (Web)
 
-1. Torna alla dashboard e apri il servizio **formazione-adl-web**.
-2. Menu a sinistra → **Environment**.
-3. Aggiungi queste 3 righe:
+1. Apri il servizio **formazione-adl-web** → **Environment**.
+2. Aggiungi:
 
    - `NEXT_PUBLIC_FIREBASE_API_KEY` → `AIzaSyBAiuwPTZjKpZbU5k7P6WGjK875BwfSXsg`
    - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` → `formazione-adl.firebaseapp.com`
    - `NEXT_PUBLIC_FIREBASE_PROJECT_ID` → `formazione-adl`
 
-4. Clicca **Save Changes**.
+3. Clicca **Save Changes**.
 
-## Passo 5 — Riavvia entrambi i servizi
+### Passo 9 — Riavvia entrambi i servizi
 
 Per ognuno dei due servizi (`formazione-adl-api` e `formazione-adl-web`):
 
 1. Apri il servizio.
 2. In alto a destra, clicca **Manual Deploy** → **Deploy latest commit**.
-3. Aspetta che il pallino diventi verde e scritto "Live" (qualche minuto).
+3. Aspetta che diventi verde con scritto "Live" (qualche minuto).
 
-## Passo 6 — Controlla gli indirizzi internet assegnati
+### Passo 10 — Controlla gli indirizzi assegnati
 
-1. Apri il servizio **formazione-adl-api**: in cima alla pagina c'è scritto un indirizzo tipo `https://formazione-adl-api.onrender.com`. Copialo.
-2. Apri il servizio **formazione-adl-web**: copia allo stesso modo il suo indirizzo, tipo `https://formazione-adl-web.onrender.com`.
-3. **Se sono uguali a questi esempi**, non devi fare altro, salta al Passo 7.
-4. **Se invece Render ha assegnato indirizzi diversi** (può succedere se quei nomi erano già usati da qualcun altro), torna su **Environment** e aggiorna:
-   - su `formazione-adl-api`: le variabili `CORS_ORIGIN` e `API_PUBLIC_URL` con l'indirizzo vero
-   - su `formazione-adl-web`: la variabile `NEXT_PUBLIC_API_URL` con l'indirizzo vero dell'API seguito da `/api/v1` (es. `https://xxxxx.onrender.com/api/v1`)
-   - poi ripeti il Passo 5 (riavvia entrambi)
+1. Apri **formazione-adl-api**: copia l'indirizzo in cima alla pagina (tipo `https://formazione-adl-api.onrender.com`).
+2. Apri **formazione-adl-web**: copia allo stesso modo il suo indirizzo.
+3. **Se sono uguali agli esempi sopra**, salta al Passo 11.
+4. **Se sono diversi** (può succedere se quei nomi erano già presi), torna su **Environment** e aggiorna:
+   - su `formazione-adl-api`: `CORS_ORIGIN` e `API_PUBLIC_URL` con l'indirizzo vero
+   - su `formazione-adl-web`: `NEXT_PUBLIC_API_URL` con l'indirizzo vero dell'API seguito da `/api/v1`
+   - poi ripeti il Passo 9 (riavvia entrambi)
 
-## Passo 7 — Un ultimo passaggio importante su Firebase (da non saltare!)
+### Passo 11 — Un ultimo passaggio importante su Firebase (da non saltare!)
 
 Senza questo passaggio il login sul sito pubblicato **non funzionerà**.
 
 1. Vai sulla Console Firebase del progetto `formazione-adl`.
-2. Menu a sinistra → **Authentication** → in alto scheda **Settings** → **Authorized domains**.
-3. Clicca **Add domain** e incolla l'indirizzo del tuo sito (quello copiato al Passo 6, senza `https://` davanti — solo tipo `formazione-adl-web.onrender.com`).
+2. **Authentication** → scheda **Settings** → **Authorized domains** → **Add domain**.
+3. Incolla l'indirizzo del tuo sito copiato al Passo 10 (senza `https://` davanti).
 
-## Passo 8 — Prova!
+### Passo 12 — Prova!
 
-Apri nel browser l'indirizzo del tuo sito (`formazione-adl-web...`). Dovresti vedere la pagina di login. Registrati con `denis.tramontano@gmail.com` per entrare come amministratore.
+Apri l'indirizzo del tuo sito. Dovresti vedere la pagina di login. Registrati con
+`denis.tramontano@gmail.com` per entrare come amministratore.
 
 ---
 
 ## Da sapere
 
-- **La piattaforma parte vuota**: i corsi/manuali di esempio che vedi in locale non vengono copiati online — è pensata per partire pulita e caricarci i contenuti veri.
-- **Da qui in poi è automatico**: ogni volta che io (o tu) modifichiamo il codice e lo pubblichiamo su GitHub, Render aggiorna da solo il sito online in pochi minuti, senza bisogno di rifare questi passaggi.
-- **Costi**: il file `render.yaml` chiede a Render un piano a pagamento sia per il database sia per i due servizi (necessario per salvare in modo permanente i file caricati — il piano gratuito li cancellerebbe ad ogni riavvio). Render ti mostra i prezzi esatti al Passo 2, prima di confermare: puoi comunque cambiare piano in qualunque momento dalla dashboard, anche dopo aver creato tutto.
+- **Costo: 0€/mese.** Nessuna carta di credito richiesta in nessuno dei due passaggi.
+- **"Si addormentano" se inutilizzati**: sia il sito sia l'API, dopo 15 minuti senza visite, vanno in pausa — la persona successiva che apre il sito aspetta 30-60 secondi in più al primo caricamento. È il prezzo della versione gratuita.
+- **Il database Supabase si mette in pausa dopo una settimana di inattività totale** (nessuno usa il sito per 7 giorni) — non perdi nulla, basta riaprirlo un attimo dalla dashboard Supabase per riattivarlo.
+- **La piattaforma parte vuota**: i corsi/manuali di esempio che vedi in locale non vengono copiati online.
+- **Da qui in poi è automatico**: ogni volta che il codice viene aggiornato su GitHub, Render ripubblica da solo sia il sito che l'API in pochi minuti.

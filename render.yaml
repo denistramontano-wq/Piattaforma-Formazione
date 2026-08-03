@@ -1,40 +1,26 @@
 # Blueprint Render: https://render.com/docs/blueprint-spec
 # Come si usa: vedi DEPLOY.md nella root del repository.
 #
+# Costo: 0€/mese. Database e file caricati vivono su Supabase (piano gratuito, permanente),
+# non su Render — per questo qui non c'è una sezione "databases:" né un "disk:" sull'API: Render
+# ospita solo il codice (due servizi web, entrambi sul piano gratuito).
+#
 # Nota sugli URL: formazione-adl-api.onrender.com / formazione-adl-web.onrender.com sono gli URL
 # che Render assegna di default in base al "name" qui sotto. Se risultano già occupati da un altro
 # account Render, questo file sceglierà comunque un nome (con suffisso casuale) — in tal caso vanno
 # aggiornati a mano CORS_ORIGIN, API_PUBLIC_URL e NEXT_PUBLIC_API_URL nella dashboard Render con gli
 # URL reali assegnati, e poi va rifatto il deploy di entrambi i servizi.
 
-databases:
-  - name: formazione-adl-db
-    databaseName: formazione
-    user: formazione
-    plan: basic-256mb
-    region: frankfurt
-
 services:
   - type: web
     name: formazione-adl-api
     runtime: docker
     region: frankfurt
-    plan: starter
+    plan: free
     dockerfilePath: apps/api/Dockerfile
     dockerContext: apps/api
     healthCheckPath: /api/v1/health
-    # Un disco persistente richiede un piano a pagamento (non disponibile sul piano gratuito) —
-    # ci sono salvati i video/manuali caricati dagli admin e i PDF dei certificati generati: senza,
-    # verrebbero persi ad ogni deploy.
-    disk:
-      name: uploads
-      mountPath: /app/uploads
-      sizeGB: 5
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: formazione-adl-db
-          property: connectionString
       - key: PORT
         value: "3001"
       - key: CORS_ORIGIN
@@ -42,6 +28,14 @@ services:
       - key: API_PUBLIC_URL
         value: https://formazione-adl-api.onrender.com
       # Da impostare a mano nella dashboard Render dopo il primo deploy (vedi DEPLOY.md):
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: uploads
       - key: FIREBASE_PROJECT_ID
         sync: false
       - key: FIREBASE_CLIENT_EMAIL
@@ -58,8 +52,6 @@ services:
     name: formazione-adl-web
     runtime: docker
     region: frankfurt
-    # Gratuito: il sito non salva nulla di suo (a differenza dell'API), l'unico effetto è che
-    # "si addormenta" dopo 15 minuti di inattività e la richiesta successiva impiega 30-60s in più.
     plan: free
     dockerfilePath: apps/web/Dockerfile
     dockerContext: apps/web
