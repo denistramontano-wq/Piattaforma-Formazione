@@ -1,6 +1,5 @@
 # Build in un unico stadio con tutte le devDependencies (serve prisma generate + nest build),
-# poi npm prune per togliere le devDependencies dall'immagine finale — mantiene "prisma" (CLI)
-# tra le dependencies normali perché serve a runtime per applicare le migration all'avvio.
+# poi npm prune per togliere le devDependencies dall'immagine finale.
 FROM node:22-slim AS build
 WORKDIR /app
 # node:22-slim non include openssl: senza, il motore di query di Prisma non riesce a
@@ -27,7 +26,10 @@ COPY --from=build /app/assets ./assets
 COPY package.json ./
 
 EXPOSE 3001
-# migrate deploy è idempotente (applica solo le migration mancanti): sicuro da rieseguire ad ogni avvio.
+# Le migration NON vengono applicate automaticamente all'avvio: con un database dietro un
+# connection pooler (es. Supabase su Render, vedi DEPLOY.md) "prisma migrate deploy" resta
+# bloccato a tempo indeterminato invece di completarsi o fallire. Vanno applicate a mano da un
+# computer con connessione diretta (non tramite pooler) quando cambia lo schema — vedi DEPLOY.md.
 # L'entry point compilato è dist/src/main.js (non dist/main.js): prisma/seed.ts, fuori da src/,
 # fa sì che TypeScript preservi la sottocartella src/ nell'output — vedi anche start:prod in package.json.
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main.js"]
+CMD ["node", "dist/src/main.js"]

@@ -21,13 +21,23 @@ configurati insieme). Non devi installare nulla di nuovo: si fa tutto dai siti d
 5. Come regione scegli una in Europa (es. "Central EU (Frankfurt)").
 6. Clicca **Create new project** e aspetta 1-2 minuti che si prepari.
 
-### Passo 2 — Copia l'indirizzo del database
+### Passo 2 — Copia i due indirizzi del database
+
+Supabase offre due modi per collegarsi allo stesso database: uno "diretto" (serve solo a te,
+una volta ogni tanto, per preparare le tabelle) e uno tramite "pooler" (quello che userà Render
+tutti i giorni per far funzionare il sito). Ti servono entrambi.
 
 1. Nel progetto appena creato, menu a sinistra → icona ingranaggio **Project Settings** → **Database**.
-2. Cerca la sezione **Connection string**, scheda **URI**. Vedrai qualcosa tipo:
-   `postgresql://postgres:[YOUR-PASSWORD]@db.xxxxxxxxxxxx.supabase.co:5432/postgres`
-3. Copialo e sostituisci la parte `[YOUR-PASSWORD]` con la password scelta al Passo 1.
-4. Tienilo da parte (ti serve al Passo 6).
+2. Cerca la sezione **Connection string**. Ti farà scegliere tra "Transaction pooler" e "Session
+   pooler": **scegli "Session pooler"**.
+3. Con tipo **URI** selezionato, copia l'indirizzo mostrato — sarà tipo
+   `postgresql://postgres.xxxxxxxxxxxx:[YOUR-PASSWORD]@aws-0-xxxxx.pooler.supabase.com:5432/postgres`
+4. Sostituisci `[YOUR-PASSWORD]` con la password scelta al Passo 1, e aggiungi `?pgbouncer=true`
+   alla fine. Salva questo indirizzo da parte con il nome **"indirizzo pooler"** (ti serve al Passo 7).
+5. Ora cerca, nella stessa pagina, l'indirizzo "diretto" (senza scritto "pooler", con
+   `db.xxxxxxxxxxxx.supabase.co` invece di `aws-0-xxxxx.pooler.supabase.com`). Copialo e sostituisci
+   allo stesso modo `[YOUR-PASSWORD]`. Salvalo da parte con il nome **"indirizzo diretto"** (ti serve
+   subito, al Passo 4.5).
 
 ### Passo 3 — Copia le chiavi del progetto
 
@@ -42,6 +52,20 @@ configurati insieme). Non devi installare nulla di nuovo: si fa tutto dai siti d
 3. Nome: `uploads` (esattamente così).
 4. Attiva l'interruttore **Public bucket** (altrimenti i manuali/certificati non si potrebbero scaricare).
 5. Clicca **Create bucket**.
+
+### Passo 4.5 — Prepara le tabelle del database
+
+Render non riesce a preparare da solo le tabelle nel database Supabase (un problema tecnico noto
+tra i due servizi), quindi lo facciamo una volta sola dal tuo Mac. Apri il **Terminale**:
+
+```
+cd /Users/denis/Desktop/piattaforma-formazione/apps/api
+DATABASE_URL="incolla qui l'indirizzo diretto del Passo 2" npx prisma migrate deploy
+```
+
+Dovrebbe rispondere con qualcosa tipo *"All migrations have been successfully applied."* — se sì,
+sei a posto e puoi continuare. Questo passaggio **va ripetuto** (con lo stesso comando) ogni volta
+in futuro in cui la struttura del database cambia — te lo segnalerò quando succede.
 
 ---
 
@@ -64,7 +88,7 @@ Vai su [render.com](https://render.com) e crea un account gratuito (puoi usare "
 1. Apri il servizio **formazione-adl-api** → menu a sinistra **Environment**.
 2. Aggiungi queste righe (a sinistra il nome, a destra il valore):
 
-   - `DATABASE_URL` → l'indirizzo copiato al Passo 2
+   - `DATABASE_URL` → l'**indirizzo pooler** copiato al Passo 2 (non quello diretto — quello serve solo dal tuo Mac)
    - `SUPABASE_URL` → il valore copiato al Passo 3
    - `SUPABASE_SERVICE_ROLE_KEY` → la chiave segreta copiata al Passo 3
    - `FIREBASE_PROJECT_ID` → `formazione-adl`
@@ -125,3 +149,4 @@ Apri l'indirizzo del tuo sito. Dovresti vedere la pagina di login. Registrati co
 - **Il database Supabase si mette in pausa dopo una settimana di inattività totale** (nessuno usa il sito per 7 giorni) — non perdi nulla, basta riaprirlo un attimo dalla dashboard Supabase per riattivarlo.
 - **La piattaforma parte vuota**: i corsi/manuali di esempio che vedi in locale non vengono copiati online.
 - **Da qui in poi è automatico**: ogni volta che il codice viene aggiornato su GitHub, Render ripubblica da solo sia il sito che l'API in pochi minuti.
+- **Eccezione**: se in futuro la struttura del database cambia (nuove funzionalità che richiedono nuove tabelle/colonne), va ripetuto a mano il comando del Passo 4.5 dal tuo Mac — te lo dirò ogni volta che serve.
