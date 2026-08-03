@@ -58,7 +58,9 @@ services:
     name: formazione-adl-web
     runtime: docker
     region: frankfurt
-    plan: starter
+    # Gratuito: il sito non salva nulla di suo (a differenza dell'API), l'unico effetto è che
+    # "si addormenta" dopo 15 minuti di inattività e la richiesta successiva impiega 30-60s in più.
+    plan: free
     dockerfilePath: apps/web/Dockerfile
     dockerContext: apps/web
     envVars:
