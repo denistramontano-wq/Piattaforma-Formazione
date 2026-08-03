@@ -3,6 +3,9 @@
 # tra le dependencies normali perché serve a runtime per applicare le migration all'avvio.
 FROM node:22-slim AS build
 WORKDIR /app
+# node:22-slim non include openssl: senza, il motore di query di Prisma non riesce a
+# rilevare la versione di libssl e può fallire silenziosamente (vedi anche stadio finale).
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -15,6 +18,7 @@ RUN npm prune --omit=dev
 FROM node:22-slim
 WORKDIR /app
 ENV NODE_ENV=production
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
