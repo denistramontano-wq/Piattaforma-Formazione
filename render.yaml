@@ -44,9 +44,6 @@ services:
         sync: false
       - key: ADMIN_EMAILS
         sync: false
-      # Opzionale: senza, il modulo IA usa il provider locale (nessun costo, nessuna chiamata esterna).
-      - key: ANTHROPIC_API_KEY
-        sync: false
 
   - type: web
     name: formazione-adl-web

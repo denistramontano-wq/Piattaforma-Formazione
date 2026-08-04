@@ -9,7 +9,6 @@ Questo scaffold implementa progressivamente i capitoli del documento di progetta
 - **03 — Sistema di ricerca**: motore federato full-text (PostgreSQL) su corsi/manuali/video/quiz/giochi/FAQ, incluso il testo estratto dai PDF.
 - **04 — Sistema di quiz**: editor admin per le 7 tipologie di domanda (`/admin/quizzes`), banca domande (estrazione casuale di N su M), ordine sequenziale o casuale, numero massimo di tentativi, tempo limite con invio automatico, riprova, e analytics per quiz (punteggio medio, tasso di superamento, domande più sbagliate).
 - **05 — Gamification**: 8 tipologie di mini gioco (flashcard, memory, drag&drop, puzzle, quiz a tempo, escape room, trova l'errore, abbinamento immagini), motore XP con livelli, badge assegnati automaticamente, streak giornaliera e classifica (settimanale/mensile/sempre), con pannello admin per configurare punti XP e badge.
-- **06 — Intelligenza Artificiale**: generazione di riassunti/flashcard/quiz/mappe concettuali con revisione admin, e assistente virtuale RAG che risponde solo sui materiali caricati citando le fonti. Funziona anche **senza** chiave API (provider locale deterministico) — vedi sotto.
 - **07 — Dashboard utente e admin**: dashboard utente con grafici (andamento corsi a ciambella, punteggi quiz nel tempo, tempo di studio settimanale stimato) e timeline attività; dashboard admin con trend nuove iscrizioni, funnel iscritti/completamenti per corso, analisi "domande più sbagliate" reale (basata sulle risposte salvate ad ogni tentativo) ed elenco utenti inattivi, entrambe con esportazione CSV.
 
 Tutti i capitoli funzionali del documento di progettazione (01-07) sono ora implementati; restano solo i capitoli 08-16 che sono documentazione di riferimento (design, architettura, roadmap), non funzionalità a sé.
@@ -58,15 +57,11 @@ npm run dev
 
 App disponibile su `http://localhost:3000`.
 
-## Modulo IA (senza chiave API)
-
-Il generatore di contenuti (`/admin/ai-generator`) e l'assistente virtuale (`/assistant`) funzionano fin da subito con un provider locale deterministico (nessuna chiamata esterna, nessun costo): riassunti estrattivi, flashcard e quiz per estrazione di parole chiave, mappe concettuali per co-occorrenza, risposte composte dagli estratti più pertinenti dei materiali. Per usare Anthropic Claude al posto del provider locale, imposta `ANTHROPIC_API_KEY` in `apps/api/.env` (vedi `.env.example`): il passaggio è automatico, senza altre modifiche.
-
 ## Modulo Quiz — semplificazioni rispetto a docs/04
 
 - **Nessun autosave per singola risposta**: il flusso è avvia tentativo → rispondi a tutte le domande → invia, non un salvataggio domanda-per-domanda (`POST /attempts/:id/answers` del capitolo). Più semplice e comunque robusto: se il browser si chiude a metà, il tentativo resta aperto (senza `submittedAt`) e non conta ai fini del limite tentativi.
 - **Tempo limite verificato solo lato client**: l'invio automatico allo scadere del timer è gestito dal browser, non da un controllo server-side sull'orario di invio. Coerente con il resto dello scaffold (nessuna sessione/autenticazione reale su cui appoggiare un controllo server affidabile).
-- **Risposta aperta valutata per parole chiave**, non con assistenza IA: la valutazione semantica via IA (menzionata nel capitolo come opzionale) non è collegata al modulo 06 per restare nello scope. Le domande `OPEN_TEXT` restano quindi adatte a criteri semplici, non a risposte articolate.
+- **Risposta aperta valutata per parole chiave**, non con assistenza IA (menzionata nel capitolo come opzionale, non implementata). Le domande `OPEN_TEXT` restano quindi adatte a criteri semplici, non a risposte articolate.
 - **Un solo blocco di domande per tentativo**, niente modalità "una domanda alla volta con feedback immediato": il quiz mostra sempre tutte le domande estratte insieme, con feedback solo al termine (una delle due modalità previste dal capitolo, non entrambe).
 
 ## Modulo Gamification — semplificazioni rispetto a docs/05

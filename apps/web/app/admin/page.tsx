@@ -33,9 +33,6 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/quizzes" className="btn-secondary">
             ❓ Gestisci quiz
           </Link>
-          <Link href="/admin/ai-generator" className="btn-secondary">
-            🤖 Generatore IA
-          </Link>
           <Link href="/admin/gamification" className="btn-secondary">
             🎮 Regole gamification
           </Link>

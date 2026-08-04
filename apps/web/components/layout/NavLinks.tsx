@@ -16,7 +16,6 @@ export const NAV_ITEMS = [
   { href: '/leaderboard', label: 'Classifica', icon: '🏆' },
   { href: '/downloads', label: 'Download', icon: '⬇️' },
   { href: '/faq', label: 'FAQ', icon: '💬' },
-  { href: '/assistant', label: 'Assistente IA', icon: '🤖' },
   { href: '/progress', label: 'Progressi', icon: '📈' },
   { href: '/certificates', label: 'Certificati', icon: '🏅' },
 ];

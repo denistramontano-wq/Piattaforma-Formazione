@@ -22,7 +22,6 @@ import { AdminCategoriesModule } from './modules/admin-categories/admin-categori
 import { AdminCoursesModule } from './modules/admin-courses/admin-courses.module';
 import { AdminQuizzesModule } from './modules/admin-quizzes/admin-quizzes.module';
 import { SearchModule } from './modules/search/search.module';
-import { AiModule } from './modules/ai/ai.module';
 import { GamificationModule } from './modules/gamification/gamification.module';
 import { StorageModule } from './modules/storage/storage.module';
 
@@ -51,7 +50,6 @@ import { StorageModule } from './modules/storage/storage.module';
     AdminCoursesModule,
     AdminQuizzesModule,
     SearchModule,
-    AiModule,
     GamificationModule,
   ],
   controllers: [AppController],
