@@ -23,8 +23,11 @@ export function getFirebaseAdminApp(): App {
     return app;
   }
 
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL?.trim().replace(/^"|"$/g, '');
+  // Tollerante a virgolette esterne incollate per errore (valide solo dentro un file .env, non
+  // nel valore grezzo di una piattaforma come Render) — senza, il parser PEM fallisce con un
+  // messaggio poco chiaro ("Failed to parse private key").
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.trim().replace(/^"|"$/g, '').replace(/\\n/g, '\n');
   if (!clientEmail || !privateKey) {
     throw new Error(
       'Credenziali Firebase mancanti: imposta FIREBASE_CLIENT_EMAIL e FIREBASE_PRIVATE_KEY (o FIREBASE_AUTH_EMULATOR_HOST in sviluppo).',

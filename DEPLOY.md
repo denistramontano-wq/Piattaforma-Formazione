@@ -93,7 +93,7 @@ Vai su [render.com](https://render.com) e crea un account gratuito (puoi usare "
    - `SUPABASE_SERVICE_ROLE_KEY` → la chiave segreta copiata al Passo 3
    - `FIREBASE_PROJECT_ID` → `formazione-adl`
    - `FIREBASE_CLIENT_EMAIL` → `firebase-adminsdk-fbsvc@formazione-adl.iam.gserviceaccount.com`
-   - `FIREBASE_PRIVATE_KEY` → apri sul Mac il file `apps/api/.env`, copia tutto il valore scritto dopo `FIREBASE_PRIVATE_KEY=` (comprese le virgolette) e incollalo qui
+   - `FIREBASE_PRIVATE_KEY` → apri sul Mac il file `apps/api/.env`, copia il valore scritto dopo `FIREBASE_PRIVATE_KEY=` **senza le virgolette** all'inizio e alla fine (qui su Render tutto quello che scrivi diventa il valore vero, le virgolette non vanno tolte automaticamente come nel file `.env`) e incollalo qui
    - `ADMIN_EMAILS` → `denis.tramontano@gmail.com`
 
 3. Clicca **Save Changes**.
