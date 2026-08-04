@@ -178,15 +178,24 @@ function QuestionInput({
 }) {
   switch (question.type) {
     case 'MULTIPLE_CHOICE':
-    case 'IMAGE_CHOICE':
+    case 'IMAGE_CHOICE': {
+      // Risposta singola (una sola corretta, impostata dall'admin): radio, come nei quiz "classici"
+      // — impedisce di selezionarne più di una invece di lasciare che l'utente ne scelga tante
+      // quante vuole. Risposta multipla: checkbox, come prima.
+      const single = question.payload.single === true;
       return (
         <div className="flex flex-col gap-2">
           {question.payload.options.map((opt: { id: string; text?: string; imageUrl?: string }) => (
             <label key={opt.id} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
               <input
-                type="checkbox"
+                type={single ? 'radio' : 'checkbox'}
+                name={single ? question.id : undefined}
                 checked={Array.isArray(value) && value.includes(opt.id)}
                 onChange={(e) => {
+                  if (single) {
+                    onChange(e.target.checked ? [opt.id] : []);
+                    return;
+                  }
                   const current: string[] = Array.isArray(value) ? value : [];
                   onChange(e.target.checked ? [...current, opt.id] : current.filter((v) => v !== opt.id));
                 }}
@@ -196,6 +205,7 @@ function QuestionInput({
           ))}
         </div>
       );
+    }
     case 'TRUE_FALSE':
       return (
         <div className="flex gap-3">

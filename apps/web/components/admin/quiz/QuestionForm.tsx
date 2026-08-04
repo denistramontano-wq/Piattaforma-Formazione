@@ -54,6 +54,9 @@ export function QuestionForm({
           { id: 'b', text: '', correct: false },
         ],
   );
+  // Risposta singola (radio, una sola corretta) o multipla (checkbox, più corrette) — vedi
+  // anche QuizPlayer.tsx lato studente, che usa questo campo per scegliere come mostrare le opzioni.
+  const [singleAnswer, setSingleAnswer] = useState<boolean>(isChoice ? (existing!.payload.single ?? false) : true);
 
   const [trueFalseCorrect, setTrueFalseCorrect] = useState<boolean>(
     existing?.type === 'TRUE_FALSE' ? existing.payload.correct : true,
@@ -94,9 +97,17 @@ export function QuestionForm({
   function buildPayload(): Record<string, unknown> {
     switch (type) {
       case 'MULTIPLE_CHOICE':
-        return { options: options.map((o) => ({ id: o.id, text: o.text })), correct: options.filter((o) => o.correct).map((o) => o.id) };
+        return {
+          options: options.map((o) => ({ id: o.id, text: o.text })),
+          correct: options.filter((o) => o.correct).map((o) => o.id),
+          single: singleAnswer,
+        };
       case 'IMAGE_CHOICE':
-        return { options: options.map((o) => ({ id: o.id, imageUrl: o.text })), correct: options.filter((o) => o.correct).map((o) => o.id) };
+        return {
+          options: options.map((o) => ({ id: o.id, imageUrl: o.text })),
+          correct: options.filter((o) => o.correct).map((o) => o.id),
+          single: singleAnswer,
+        };
       case 'TRUE_FALSE':
         return { correct: trueFalseCorrect };
       case 'FILL_BLANK':
@@ -171,6 +182,27 @@ export function QuestionForm({
 
       {(type === 'MULTIPLE_CHOICE' || type === 'IMAGE_CHOICE') && (
         <div className="flex flex-col gap-2">
+          <div className="flex gap-4 text-sm">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={singleAnswer}
+                onChange={() => {
+                  setSingleAnswer(true);
+                  // Una sola risposta corretta ammessa: se ce n'erano già più di una selezionata, tiene solo la prima.
+                  setOptions((prev) => {
+                    const firstCorrect = prev.find((o) => o.correct);
+                    return prev.map((o) => ({ ...o, correct: firstCorrect ? o.id === firstCorrect.id : false }));
+                  });
+                }}
+              />
+              Risposta singola (l&apos;utente ne sceglie una)
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="radio" checked={!singleAnswer} onChange={() => setSingleAnswer(false)} />
+              Risposta multipla (l&apos;utente può sceglierne più di una)
+            </label>
+          </div>
           <span className="text-sm text-slate-600 dark:text-slate-300">
             Opzioni {type === 'IMAGE_CHOICE' && '(descrizione immagine)'} — seleziona quelle corrette
           </span>
@@ -180,7 +212,12 @@ export function QuestionForm({
                 type="checkbox"
                 checked={opt.correct}
                 onChange={(e) =>
-                  setOptions((prev) => prev.map((o, j) => (j === i ? { ...o, correct: e.target.checked } : o)))
+                  setOptions((prev) =>
+                    prev.map((o, j) => {
+                      if (j !== i) return singleAnswer && e.target.checked ? { ...o, correct: false } : o;
+                      return { ...o, correct: e.target.checked };
+                    }),
+                  )
                 }
               />
               <input

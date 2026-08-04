@@ -237,14 +237,7 @@ export function Topbar() {
       >
         🔍
       </button>
-      <button
-        type="button"
-        aria-label="Notifiche"
-        className="hidden shrink-0 rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 sm:block md:ml-auto"
-      >
-        🔔
-      </button>
-      <div className="hidden sm:block">
+      <div className="hidden sm:block md:ml-auto">
         <ThemeToggle />
       </div>
       <UserMenu />
