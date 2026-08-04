@@ -24,6 +24,10 @@ RUN npm run build
 FROM node:22-slim
 WORKDIR /app
 ENV NODE_ENV=production
+# Docker imposta HOSTNAME al nome interno del container: il server standalone di Next.js lo
+# userebbe come indirizzo su cui ascoltare, restando irraggiungibile dall'esterno. Forziamo
+# 0.0.0.0 (tutte le interfacce) sovrascrivendo quella variabile.
+ENV HOSTNAME="0.0.0.0"
 
 COPY --from=build /app/public ./public
 COPY --from=build /app/.next/standalone ./
