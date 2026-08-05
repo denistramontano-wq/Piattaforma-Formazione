@@ -253,6 +253,7 @@ export interface HomeHighlights {
     estimatedMinutes: number;
   }[];
   continueLearning: { title: string; slug: string; coverUrl: string | null; progressPct: number }[];
+  userFullName: string | null;
 }
 
 export interface AdminOverview {

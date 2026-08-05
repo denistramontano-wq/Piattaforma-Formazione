@@ -56,7 +56,7 @@ export class DashboardService {
       }));
     }
 
-    return { featured, continueLearning };
+    return { featured, continueLearning, userFullName: user?.fullName ?? null };
   }
 
   async userDashboard() {

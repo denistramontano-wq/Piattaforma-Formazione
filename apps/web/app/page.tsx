@@ -12,7 +12,9 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-10">
       <section>
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Bentornata, Maria 👋</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          Ciao{data.userFullName ? `, ${data.userFullName.split(' ')[0]}` : ''} 👋
+        </h1>
         <p className="mt-1 text-slate-500 dark:text-slate-400">
           Ecco i corsi consigliati e da dove hai lasciato la formazione.
         </p>

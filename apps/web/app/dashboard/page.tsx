@@ -27,7 +27,7 @@ export default async function DashboardPage() {
 
       <div className="card flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-accent-500 to-accent-600 p-6 text-white">
         <div>
-          <h1 className="text-2xl font-semibold">Bentornata, {data.user.fullName.split(' ')[0]} 👋</h1>
+          <h1 className="text-2xl font-semibold">Ciao, {data.user.fullName.split(' ')[0]} 👋</h1>
           <p className="mt-1 text-accent-50">
             Livello {data.user.level} — {data.user.levelName} · {data.user.totalXp} XP
           </p>
