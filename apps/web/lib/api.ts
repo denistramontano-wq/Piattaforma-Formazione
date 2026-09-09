@@ -27,6 +27,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     cache: 'no-store',
   });
   if (!res.ok) {
+    // Lato server, una sessione non (più) valida non deve far crashare la pagina con
+    // l'errore generico di Next.js: si rimanda al login, come farebbe il middleware.
+    if (res.status === 401 && typeof window === 'undefined') {
+      const { redirect } = await import('next/navigation');
+      redirect('/login');
+    }
     throw new Error(`Richiesta API fallita: ${init?.method ?? 'GET'} ${path} → ${res.status}`);
   }
   return res.json() as Promise<T>;
